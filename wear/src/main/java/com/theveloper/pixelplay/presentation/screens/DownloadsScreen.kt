@@ -43,12 +43,14 @@ import androidx.wear.compose.material.Text
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
 import com.theveloper.pixelplay.presentation.components.AlwaysOnScalingPositionIndicator
+import com.theveloper.pixelplay.presentation.components.PlayingEqIcon
 import com.theveloper.pixelplay.presentation.components.WearTopTimeText
 import com.theveloper.pixelplay.presentation.theme.LocalWearPalette
 import com.theveloper.pixelplay.presentation.theme.screenBackgroundColor
 import com.theveloper.pixelplay.presentation.theme.surfaceContainerColor
 import com.theveloper.pixelplay.presentation.theme.surfaceContainerHighColor
 import com.theveloper.pixelplay.presentation.viewmodel.WearDownloadsViewModel
+import com.theveloper.pixelplay.presentation.viewmodel.WearPlayerViewModel
 import com.theveloper.pixelplay.shared.WearTransferProgress
 
 /**
@@ -59,12 +61,14 @@ import com.theveloper.pixelplay.shared.WearTransferProgress
 fun DownloadsScreen(
     onSongClick: (songId: String) -> Unit = {},
     viewModel: WearDownloadsViewModel = hiltViewModel(),
+    playerViewModel: WearPlayerViewModel = hiltViewModel(),
 ) {
     val localSongs by viewModel.localSongs.collectAsState()
     val activeTransfers by viewModel.activeTransfers.collectAsState()
     val deviceSongs by viewModel.deviceSongs.collectAsState()
     val isDeviceLibraryLoading by viewModel.isDeviceLibraryLoading.collectAsState()
     val deviceLibraryError by viewModel.deviceLibraryError.collectAsState()
+    val playerState by playerViewModel.playerState.collectAsState()
     val palette = LocalWearPalette.current
     val columnState = rememberResponsiveColumnState()
     val context = LocalContext.current
@@ -203,6 +207,21 @@ fun DownloadsScreen(
             } else {
                 items(localSongs.size) { index ->
                     val song = localSongs[index]
+                    val isCurrentSong = song.songId == playerState.songId && playerState.songId.isNotBlank()
+                    val isPlayingSong = isCurrentSong && playerState.isPlaying
+                    val secondaryText = if (
+                        song.artist.isNotEmpty() ||
+                        song.album.isNotEmpty() ||
+                        song.duration > 0L
+                    ) {
+                        buildSongSubtitle(
+                            artist = song.artist,
+                            album = song.album,
+                            durationMs = song.duration,
+                        )
+                    } else {
+                        ""
+                    }
                     Chip(
                         label = {
                             Text(
@@ -212,38 +231,52 @@ fun DownloadsScreen(
                                 color = palette.textPrimary,
                             )
                         },
-                        secondaryLabel = if (
-                            song.artist.isNotEmpty() ||
-                            song.album.isNotEmpty() ||
-                            song.duration > 0L
-                        ) {
+                        secondaryLabel = if (secondaryText.isNotEmpty() || isCurrentSong) {
                             {
                                 Text(
-                                    text = buildSongSubtitle(
-                                        artist = song.artist,
-                                        album = song.album,
-                                        durationMs = song.duration,
-                                    ),
+                                    text = if (isCurrentSong) {
+                                        if (secondaryText.isNotEmpty()) {
+                                            "${if (isPlayingSong) "Playing" else "Current"} · $secondaryText"
+                                        } else if (isPlayingSong) {
+                                            "Playing"
+                                        } else {
+                                            "Current"
+                                        }
+                                    } else {
+                                        secondaryText
+                                    },
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = palette.textSecondary.copy(alpha = 0.78f),
+                                    color = if (isCurrentSong && isPlayingSong) {
+                                        palette.shuffleActive.copy(alpha = 0.90f)
+                                    } else {
+                                        palette.textSecondary.copy(alpha = 0.78f)
+                                    },
                                 )
                             }
                         } else null,
                         icon = {
-                            Icon(
-                                imageVector = Icons.Rounded.MusicNote,
-                                contentDescription = null,
-                                tint = palette.textSecondary,
-                                modifier = Modifier.size(18.dp),
-                            )
+                            if (isCurrentSong) {
+                                PlayingEqIcon(
+                                    color = if (isPlayingSong) palette.shuffleActive else palette.textSecondary,
+                                    isPlaying = isPlayingSong,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.MusicNote,
+                                    contentDescription = null,
+                                    tint = palette.textSecondary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
                         },
                         onClick = {
                             viewModel.playLocalSong(song.songId)
                             onSongClick(song.songId)
                         },
                         colors = ChipDefaults.chipColors(
-                            backgroundColor = surfaceContainer,
+                            backgroundColor = if (isCurrentSong) elevatedSurfaceContainer else surfaceContainer,
                             contentColor = palette.chipContent,
                         ),
                         modifier = Modifier.fillMaxWidth(),
@@ -354,6 +387,17 @@ fun DownloadsScreen(
             } else {
                 items(deviceSongs.size) { index ->
                     val song = deviceSongs[index]
+                    val isCurrentSong = song.songId == playerState.songId && playerState.songId.isNotBlank()
+                    val isPlayingSong = isCurrentSong && playerState.isPlaying
+                    val secondaryText = if (song.artist.isNotEmpty() || song.album.isNotEmpty()) {
+                        buildSongSubtitle(
+                            artist = song.artist,
+                            album = song.album,
+                            durationMs = song.durationMs,
+                        )
+                    } else {
+                        ""
+                    }
                     Chip(
                         label = {
                             Text(
@@ -363,34 +407,52 @@ fun DownloadsScreen(
                                 color = palette.textPrimary,
                             )
                         },
-                        secondaryLabel = if (song.artist.isNotEmpty() || song.album.isNotEmpty()) {
+                        secondaryLabel = if (secondaryText.isNotEmpty() || isCurrentSong) {
                             {
                                 Text(
-                                    text = buildSongSubtitle(
-                                        artist = song.artist,
-                                        album = song.album,
-                                        durationMs = song.durationMs,
-                                    ),
+                                    text = if (isCurrentSong) {
+                                        if (secondaryText.isNotEmpty()) {
+                                            "${if (isPlayingSong) "Playing" else "Current"} · $secondaryText"
+                                        } else if (isPlayingSong) {
+                                            "Playing"
+                                        } else {
+                                            "Current"
+                                        }
+                                    } else {
+                                        secondaryText
+                                    },
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = palette.textSecondary.copy(alpha = 0.78f),
+                                    color = if (isCurrentSong && isPlayingSong) {
+                                        palette.shuffleActive.copy(alpha = 0.90f)
+                                    } else {
+                                        palette.textSecondary.copy(alpha = 0.78f)
+                                    },
                                 )
                             }
                         } else null,
                         icon = {
-                            Icon(
-                                imageVector = Icons.Rounded.MusicNote,
-                                contentDescription = null,
-                                tint = palette.textSecondary,
-                                modifier = Modifier.size(18.dp),
-                            )
+                            if (isCurrentSong) {
+                                PlayingEqIcon(
+                                    color = if (isPlayingSong) palette.shuffleActive else palette.textSecondary,
+                                    isPlaying = isPlayingSong,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.MusicNote,
+                                    contentDescription = null,
+                                    tint = palette.textSecondary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
                         },
                         onClick = {
                             viewModel.playDeviceSong(song.songId)
                             onSongClick(song.songId)
                         },
                         colors = ChipDefaults.chipColors(
-                            backgroundColor = surfaceContainer,
+                            backgroundColor = if (isCurrentSong) elevatedSurfaceContainer else surfaceContainer,
                             contentColor = palette.chipContent,
                         ),
                         modifier = Modifier.fillMaxWidth(),

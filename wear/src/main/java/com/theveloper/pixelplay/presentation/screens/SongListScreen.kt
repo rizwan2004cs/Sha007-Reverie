@@ -37,6 +37,7 @@ import androidx.wear.compose.material.Text
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
 import com.theveloper.pixelplay.presentation.components.AlwaysOnScalingPositionIndicator
+import com.theveloper.pixelplay.presentation.components.PlayingEqIcon
 import com.theveloper.pixelplay.presentation.components.WearTopTimeText
 import com.theveloper.pixelplay.presentation.viewmodel.BrowseUiState
 import com.theveloper.pixelplay.presentation.viewmodel.WearBrowseViewModel
@@ -59,6 +60,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import com.theveloper.pixelplay.data.TransferState
 import com.theveloper.pixelplay.presentation.viewmodel.WearDownloadsViewModel
+import com.theveloper.pixelplay.presentation.viewmodel.WearPlayerViewModel
 import com.theveloper.pixelplay.shared.WearTransferProgress
 
 /**
@@ -73,10 +75,12 @@ fun SongListScreen(
     onSongPlayed: () -> Unit = {},
     viewModel: WearBrowseViewModel = hiltViewModel(),
     downloadsViewModel: WearDownloadsViewModel = hiltViewModel(),
+    playerViewModel: WearPlayerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val downloadedIds by downloadsViewModel.downloadedSongIds.collectAsState()
     val activeTransfers by downloadsViewModel.activeTransfers.collectAsState()
+    val playerState by playerViewModel.playerState.collectAsState()
     val palette = LocalWearPalette.current
     var selectedSongForMenu by remember { mutableStateOf<WearLibraryItem?>(null) }
     var selectedSongForTransferConfirmation by remember { mutableStateOf<WearLibraryItem?>(null) }
@@ -237,10 +241,13 @@ fun SongListScreen(
                             val song = state.items[index]
                             val isDownloaded = downloadedIds.contains(song.id)
                             val transfer = pickTransferForSong(activeTransfers, song.id)
+                            val isCurrentSong = song.id == playerState.songId && playerState.songId.isNotBlank()
                             SongChip(
                                 song = song,
                                 isDownloaded = isDownloaded,
                                 transfer = transfer,
+                                isCurrentSong = isCurrentSong,
+                                isPlayingSong = isCurrentSong && playerState.isPlaying,
                                 onClick = {
                                     viewModel.playFromContext(
                                         songId = song.id,
@@ -364,12 +371,29 @@ private fun SongChip(
     song: WearLibraryItem,
     isDownloaded: Boolean = false,
     transfer: TransferState? = null,
+    isCurrentSong: Boolean = false,
+    isPlayingSong: Boolean = false,
     onClick: () -> Unit,
     onMenuClick: () -> Unit = {},
 ) {
     val palette = LocalWearPalette.current
     val isTransferring = transfer != null &&
         transfer.status == WearTransferProgress.STATUS_TRANSFERRING
+    val secondaryText = when {
+        isTransferring -> "${(transfer!!.progress * 100).toInt()}%"
+        isCurrentSong -> {
+            val stateLabel = if (isPlayingSong) "Playing" else "Current"
+            if (song.subtitle.isNotEmpty()) "$stateLabel · ${song.subtitle}" else stateLabel
+        }
+        song.subtitle.isNotEmpty() -> song.subtitle
+        else -> null
+    }
+    val iconTint = if (isCurrentSong) {
+        if (isPlayingSong) palette.shuffleActive else palette.textSecondary
+    } else {
+        palette.textSecondary
+    }
+    val containerColor = if (isCurrentSong) palette.surfaceContainerHighColor() else palette.surfaceContainerColor()
 
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -383,26 +407,28 @@ private fun SongChip(
                     color = palette.textPrimary,
                 )
             },
-            secondaryLabel = if (song.subtitle.isNotEmpty()) {
+            secondaryLabel = if (secondaryText != null) {
                 {
                     Text(
-                        text = if (isTransferring) {
-                            "${(transfer!!.progress * 100).toInt()}%"
-                        } else {
-                            song.subtitle
-                        },
+                        text = secondaryText,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = if (isTransferring) {
-                            palette.shuffleActive.copy(alpha = 0.9f)
-                        } else {
-                            palette.textSecondary.copy(alpha = 0.78f)
+                        color = when {
+                            isCurrentSong && isPlayingSong -> palette.shuffleActive.copy(alpha = 0.90f)
+                            isCurrentSong -> palette.textSecondary.copy(alpha = 0.90f)
+                            isTransferring -> palette.shuffleActive.copy(alpha = 0.90f)
+                            else -> palette.textSecondary.copy(alpha = 0.78f)
                         },
                     )
                 }
             } else null,
             icon = {
                 when {
+                    isCurrentSong -> PlayingEqIcon(
+                        color = iconTint,
+                        isPlaying = isPlayingSong,
+                        modifier = Modifier.size(18.dp),
+                    )
                     isDownloaded -> Icon(
                         imageVector = Icons.Rounded.CheckCircle,
                         contentDescription = "Downloaded",
@@ -425,7 +451,7 @@ private fun SongChip(
             },
             onClick = onClick,
             colors = ChipDefaults.chipColors(
-                backgroundColor = palette.surfaceContainerColor(),
+                backgroundColor = containerColor,
                 contentColor = palette.chipContent,
             ),
             modifier = Modifier

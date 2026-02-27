@@ -40,6 +40,7 @@ import androidx.wear.compose.material.Text
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
 import com.theveloper.pixelplay.presentation.components.AlwaysOnScalingPositionIndicator
+import com.theveloper.pixelplay.presentation.components.PlayingEqIcon
 import com.theveloper.pixelplay.presentation.components.WearTopTimeText
 import com.theveloper.pixelplay.presentation.theme.LocalWearPalette
 import com.theveloper.pixelplay.presentation.theme.screenBackgroundColor
@@ -53,7 +54,6 @@ import com.theveloper.pixelplay.presentation.viewmodel.WearSleepTimerMode
 import com.theveloper.pixelplay.shared.WearBrowseRequest
 import com.theveloper.pixelplay.shared.WearLibraryItem
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
@@ -208,9 +208,12 @@ fun QueueScreen(
                                 } else {
                                     items(state.items.size) { index ->
                                         val item = state.items[index]
+                                        val isCurrentSong = item.subtitle.startsWith("Playing")
                                         QueueSongChip(
                                             song = item,
                                             enabled = controlsEnabled,
+                                            isCurrentSong = isCurrentSong,
+                                            isPlayingSong = isCurrentSong && playerState.isPlaying,
                                             onClick = {
                                                 item.id.toIntOrNull()?.let { queueIndex ->
                                                     browseViewModel.playQueueIndex(queueIndex)
@@ -362,10 +365,17 @@ private fun QueueShortcutSlot(
 private fun QueueSongChip(
     song: WearLibraryItem,
     enabled: Boolean,
+    isCurrentSong: Boolean,
+    isPlayingSong: Boolean,
     onClick: () -> Unit,
 ) {
     val palette = LocalWearPalette.current
-    val isPlayingItem = song.subtitle.startsWith("Playing")
+    val subtitleText = if (isCurrentSong && !isPlayingSong) {
+        song.subtitle.replaceFirst("Playing", "Current")
+    } else {
+        song.subtitle
+    }
+    val iconTint = if (isPlayingSong) palette.shuffleActive else palette.textSecondary
 
     Chip(
         label = {
@@ -378,24 +388,36 @@ private fun QueueSongChip(
         },
         secondaryLabel = {
             Text(
-                text = song.subtitle,
+                text = subtitleText,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = palette.textSecondary.copy(alpha = 0.78f),
+                color = if (isPlayingSong) {
+                    palette.shuffleActive.copy(alpha = 0.90f)
+                } else {
+                    palette.textSecondary.copy(alpha = 0.78f)
+                },
             )
         },
         icon = {
-            Icon(
-                imageVector = if (isPlayingItem) Icons.Rounded.PlayArrow else Icons.Rounded.MusicNote,
-                contentDescription = null,
-                tint = if (isPlayingItem) palette.shuffleActive else palette.textSecondary,
-                modifier = Modifier.size(18.dp),
-            )
+            if (isCurrentSong) {
+                PlayingEqIcon(
+                    color = iconTint,
+                    isPlaying = isPlayingSong,
+                    modifier = Modifier.size(18.dp),
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Rounded.MusicNote,
+                    contentDescription = null,
+                    tint = palette.textSecondary,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         },
         onClick = onClick,
         enabled = enabled,
         colors = ChipDefaults.chipColors(
-            backgroundColor = if (isPlayingItem) {
+            backgroundColor = if (isCurrentSong) {
                 palette.surfaceContainerHighColor()
             } else {
                 palette.surfaceContainerColor()
