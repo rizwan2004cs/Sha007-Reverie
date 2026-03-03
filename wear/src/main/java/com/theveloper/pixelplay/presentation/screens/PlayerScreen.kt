@@ -1135,7 +1135,7 @@ private fun MainPlayerPage(
                     } else {
                         activeOutputRouteType
                     },
-                    moreEnabled = true,
+                    moreEnabled = !state.isEmpty,
                     onVolumeClick = onVolumeClick,
                     onOutputClick = onOutputClick,
                     onMoreClick = onMoreClick,
@@ -1590,6 +1590,7 @@ private fun SecondaryControlsRow(
                 enabled = volumeEnabled,
                 active = false,
                 activeColor = deviceActiveColor,
+                raisedInactiveStyle = true,
                 onClick = onVolumeClick,
                 contentDescription = "Volume",
             )
@@ -1600,6 +1601,7 @@ private fun SecondaryControlsRow(
                 enabled = deviceEnabled,
                 active = deviceRouteType == com.theveloper.pixelplay.shared.WearVolumeState.ROUTE_TYPE_WATCH,
                 activeColor = deviceActiveColor,
+                raisedInactiveStyle = true,
                 onClick = onOutputClick,
                 contentDescription = "Output device",
             )
@@ -1610,6 +1612,8 @@ private fun SecondaryControlsRow(
                 enabled = moreEnabled,
                 active = false,
                 activeColor = deviceActiveColor,
+                raisedInactiveStyle = true,
+                heavilyMutedWhenDisabled = true,
                 onClick = onMoreClick,
                 contentDescription = "More options",
             )
@@ -1623,25 +1627,47 @@ private fun SecondaryActionButton(
     enabled: Boolean,
     active: Boolean,
     activeColor: Color,
+    raisedInactiveStyle: Boolean = false,
+    heavilyMutedWhenDisabled: Boolean = false,
     onClick: () -> Unit,
     contentDescription: String,
 ) {
     val palette = LocalWearPalette.current
     val activeContainerColor = activeColor.copy(alpha = 0.84f)
+    val inactiveContainerColor = if (raisedInactiveStyle) {
+        palette.surfaceContainerHighest
+    } else {
+        palette.chipContainer
+    }
+    val inactiveContentColor = if (raisedInactiveStyle) {
+        palette.textPrimary.copy(alpha = 0.94f)
+    } else {
+        palette.chipContent
+    }
+    val disabledContainerColor = if (heavilyMutedWhenDisabled) {
+        palette.surfaceContainerLowest.copy(alpha = 0.92f)
+    } else {
+        palette.controlDisabledContainer
+    }
+    val disabledContentColor = if (heavilyMutedWhenDisabled) {
+        palette.textSecondary.copy(alpha = 0.48f)
+    } else {
+        palette.controlDisabledContent
+    }
     val container by animateColorAsState(
         targetValue = when {
-            !enabled -> palette.controlDisabledContainer
+            !enabled -> disabledContainerColor
             active -> activeContainerColor
-            else -> palette.chipContainer
+            else -> inactiveContainerColor
         },
         animationSpec = spring(),
         label = "secondaryContainer",
     )
     val tint by animateColorAsState(
         targetValue = when {
-            !enabled -> palette.controlDisabledContent
+            !enabled -> disabledContentColor
             active -> if (activeContainerColor.luminance() > 0.52f) Color.Black else Color.White
-            else -> palette.chipContent
+            else -> inactiveContentColor
         },
         animationSpec = spring(),
         label = "secondaryTint",
