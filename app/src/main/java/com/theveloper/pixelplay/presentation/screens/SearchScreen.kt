@@ -330,15 +330,14 @@ fun SearchScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.BottomCenter)
-                                .height(80.dp)
+                                .height(170.dp)
                                 .background(
                                     brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            MaterialTheme.colorScheme.surfaceContainerLowest.copy(
-                                                0.5f
-                                            ),
-                                            MaterialTheme.colorScheme.surfaceContainerLowest
+                                        colorStops = arrayOf(
+                                            0.0f to Color.Transparent,
+                                            0.2f to Color.Transparent,
+                                            0.8f to MaterialTheme.colorScheme.surfaceContainerLowest,
+                                            1.0f to MaterialTheme.colorScheme.surfaceContainerLowest
                                         )
                                     )
                                 )
