@@ -3,6 +3,7 @@ package com.theveloper.pixelplay.presentation.viewmodel
 import android.content.Context
 import com.theveloper.pixelplay.R
 import com.theveloper.pixelplay.data.DailyMixManager
+import com.theveloper.pixelplay.data.ai.AiErrorMessageResolver
 import com.theveloper.pixelplay.data.ai.AiMetadataGenerator
 import com.theveloper.pixelplay.data.ai.AiPlaylistGenerator
 import com.theveloper.pixelplay.data.ai.SongMetadata
@@ -205,9 +206,9 @@ class AiStateHolder @Inject constructor(
                         toastEmitter?.invoke(context.getString(R.string.ai_no_songs_for_mix))
                     }
                 }.onFailure { error ->
-                    val detail = extractAiErrorDetail(error)
-                    _aiError.value = resolveAiErrorMessage(error)
-                    toastEmitter?.invoke(context.getString(R.string.could_not_update, detail))
+                    val message = resolveAiErrorMessage(error)
+                    _aiError.value = message
+                    toastEmitter?.invoke(context.getString(R.string.could_not_update, message))
                 }
             } finally {
                 _isGeneratingAiPlaylist.value = false
@@ -234,21 +235,11 @@ class AiStateHolder @Inject constructor(
     }
 
     private fun resolveAiErrorMessage(error: Throwable): String {
-        val detail = extractAiErrorDetail(error)
-        return if (detail.contains("api key", ignoreCase = true)) {
-            context.getString(R.string.ai_error_api_key)
-        } else {
-            context.getString(R.string.ai_error_generic, detail)
-        }
+        return AiErrorMessageResolver.toUserMessage(context, error)
     }
 
     private fun extractAiErrorDetail(error: Throwable): String {
-        return listOf(error.message.orEmpty(), error.cause?.message.orEmpty())
-            .map { raw ->
-                raw.replace(Regex("^AI\\s*Error:\\s*", RegexOption.IGNORE_CASE), "").trim()
-            }
-            .firstOrNull { it.isNotBlank() }
-            ?: "Unknown error"
+        return AiErrorMessageResolver.extractDetail(error)
     }
 
     private fun resolveAiPlaylistName(

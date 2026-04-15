@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.theveloper.pixelplay.data.DailyMixManager
+import com.theveloper.pixelplay.data.ai.AiErrorMessageResolver
 import com.theveloper.pixelplay.data.model.Playlist
 import com.theveloper.pixelplay.data.model.SmartPlaylistRule
 import com.theveloper.pixelplay.data.model.Song
@@ -48,11 +49,11 @@ data class PlaylistUiState(
     val isLoading: Boolean = false,
     val playlistNotFound: Boolean = false,
 
-    // Para el diálogo/pantalla de selección de canciones
-    val songSelectionPage: Int = 1, // Nuevo: para rastrear la página actual de selección
+    // Para el diÃ¡logo/pantalla de selecciÃ³n de canciones
+    val songSelectionPage: Int = 1, // Nuevo: para rastrear la pÃ¡gina actual de selecciÃ³n
     val songSelectionForPlaylist: List<Song> = emptyList(),
     val isLoadingSongSelection: Boolean = false,
-    val canLoadMoreSongsForSelection: Boolean = true, // Nuevo: para saber si hay más canciones para cargar
+    val canLoadMoreSongsForSelection: Boolean = true, // Nuevo: para saber si hay mÃ¡s canciones para cargar
 
     //Sort option
     val currentPlaylistSortOption: SortOption = SortOption.PlaylistNameAZ,
@@ -164,7 +165,7 @@ class PlaylistViewModel @Inject constructor(
         }
     }
 
-    // Nueva función para cargar canciones para el selector de forma paginada
+    // Nueva funciÃ³n para cargar canciones para el selector de forma paginada
     fun loadMoreSongsForSelection(isInitialLoad: Boolean = false) {
         val currentState = _uiState.value
         if (currentState.isLoadingSongSelection && !isInitialLoad) {
@@ -182,12 +183,12 @@ class PlaylistViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isLoadingSongSelection = true,
-                    songSelectionPage = initialPageForLoad // Establecer la página correcta antes de la llamada
+                    songSelectionPage = initialPageForLoad // Establecer la pÃ¡gina correcta antes de la llamada
                 )
             }
 
             // Usar el songSelectionPage del estado que acabamos de actualizar para la llamada al repo
-            val pageToLoad = _uiState.value.songSelectionPage // Esta ahora es la página correcta
+            val pageToLoad = _uiState.value.songSelectionPage // Esta ahora es la pÃ¡gina correcta
 
             Log.d(
                 "PlaylistVM",
@@ -202,12 +203,12 @@ class PlaylistViewModel @Inject constructor(
                     }
                 Log.d("PlaylistVM", "Loaded ${actualNewSongsList.size} songs for selection.")
 
-                // La actualización del UI se hace en el hilo principal (contexto por defecto de viewModelScope.launch)
+                // La actualizaciÃ³n del UI se hace en el hilo principal (contexto por defecto de viewModelScope.launch)
                 _uiState.update { currentStateAfterLoad ->
                     val updatedSongSelectionList = if (isInitialLoad) {
                         actualNewSongsList
                     } else {
-                        // Evitar duplicados si por alguna razón se recarga la misma página
+                        // Evitar duplicados si por alguna razÃ³n se recarga la misma pÃ¡gina
                         val currentSongIds =
                             currentStateAfterLoad.songSelectionForPlaylist.map { it.id }.toSet()
                         val uniqueNewSongs =
@@ -219,11 +220,11 @@ class PlaylistViewModel @Inject constructor(
                         songSelectionForPlaylist = updatedSongSelectionList,
                         isLoadingSongSelection = false,
                         canLoadMoreSongsForSelection = actualNewSongsList.size == SONG_SELECTION_PAGE_SIZE,
-                        // Incrementar la página solo si se cargaron canciones y se espera que haya más
+                        // Incrementar la pÃ¡gina solo si se cargaron canciones y se espera que haya mÃ¡s
                         songSelectionPage = if (actualNewSongsList.isNotEmpty() && actualNewSongsList.size == SONG_SELECTION_PAGE_SIZE) {
                             currentStateAfterLoad.songSelectionPage + 1
                         } else {
-                            currentStateAfterLoad.songSelectionPage // No incrementar si no hay más o si la carga fue parcial
+                            currentStateAfterLoad.songSelectionPage // No incrementar si no hay mÃ¡s o si la carga fue parcial
                         }
                     )
                 }
@@ -310,7 +311,7 @@ class PlaylistViewModel @Inject constructor(
                             PlaylistSongsOrderMode.Manual -> songsList
                         }
 
-                        // La actualización del UI se hace en el hilo principal
+                        // La actualizaciÃ³n del UI se hace en el hilo principal
                         _uiState.update {
                             it.copy(
                                 currentPlaylistDetails = playlist,
@@ -333,7 +334,7 @@ class PlaylistViewModel @Inject constructor(
                                 currentPlaylistSongs = emptyList()
                             )
                         } // Mantener isLoading en false
-                        // Opcional: podrías establecer un error o un estado específico de "no encontrado"
+                        // Opcional: podrÃ­as establecer un error o un estado especÃ­fico de "no encontrado"
                     }
                 }
             } catch (e: Exception) {
@@ -952,16 +953,17 @@ class PlaylistViewModel @Inject constructor(
                     _uiState.update { it.copy(isAiGenerating = false) }
                     _playlistCreationEvent.emit(true)
                 }.onFailure { e ->
-                    val errorMessage = if (e.message?.contains("API Key") == true) {
-                        "Please configure your Gemini API Key in Settings."
-                    } else {
-                        e.message ?: "Unknown error"
-                    }
+                    val errorMessage = AiErrorMessageResolver.toUserMessage(context, e)
                     _uiState.update { it.copy(isAiGenerating = false, aiGenerationError = errorMessage) }
                 }
 
             } catch (e: Exception) {
-                _uiState.update { it.copy(isAiGenerating = false, aiGenerationError = e.message) }
+                _uiState.update {
+                    it.copy(
+                        isAiGenerating = false,
+                        aiGenerationError = AiErrorMessageResolver.toUserMessage(context, e)
+                    )
+                }
             }
         }
     }
@@ -1167,7 +1169,7 @@ class PlaylistViewModel @Inject constructor(
                     musicDir.mkdirs()
                 }
                 
-                val exportDir = File(musicDir, "PixelPlayer Exports")
+                val exportDir = File(musicDir, "sha007Reverie Exports")
                 if (!exportDir.exists()) {
                     exportDir.mkdirs()
                 }
@@ -1187,7 +1189,7 @@ class PlaylistViewModel @Inject constructor(
                 }
                 
                 Log.d("PlaylistViewModel", "Successfully exported ${playlistIds.size} playlists to $exportDir")
-                Toast.makeText(context, "Exported ${playlistsWithSongs.size} playlist(s) to Music/PixelPlayer Exports", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Exported ${playlistsWithSongs.size} playlist(s) to Music/sha007Reverie Exports", Toast.LENGTH_SHORT).show()
                 
             } catch (e: Exception) {
                 Log.e("PlaylistViewModel", "Error exporting playlists", e)

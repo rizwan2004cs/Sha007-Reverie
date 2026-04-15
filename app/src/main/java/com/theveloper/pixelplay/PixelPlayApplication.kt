@@ -47,7 +47,7 @@ class PixelPlayApplication : Application(), ImageLoaderFactory, Configuration.Pr
     @Inject
     lateinit var navidromeCoilFetcherFactory: dagger.Lazy<com.theveloper.pixelplay.data.image.NavidromeCoilFetcher.Factory>
 
-    // AÑADE EL COMPANION OBJECT
+    // AÃ‘ADE EL COMPANION OBJECT
     companion object {
         const val NOTIFICATION_CHANNEL_ID = "pixelplay_music_channel"
     }
@@ -71,7 +71,7 @@ class PixelPlayApplication : Application(), ImageLoaderFactory, Configuration.Pr
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
-                "PixelPlayer Music Playback",
+                "sha007Reverie Music Playback",
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -122,7 +122,7 @@ class PixelPlayApplication : Application(), ImageLoaderFactory, Configuration.Pr
         }
     }
 
-    // 3. Sobrescribe el método para proveer la configuración de WorkManager
+    // 3. Sobrescribe el mÃ©todo para proveer la configuraciÃ³n de WorkManager
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)

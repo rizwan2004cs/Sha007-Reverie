@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 import com.theveloper.pixelplay.data.preferences.NavBarStyle
+import com.theveloper.pixelplay.data.ai.AiErrorMessageResolver
 import com.theveloper.pixelplay.data.ai.GeminiModel
 import com.theveloper.pixelplay.data.ai.provider.AiClientFactory
 import com.theveloper.pixelplay.data.ai.provider.AiProvider
@@ -764,14 +765,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             aiPreferencesRepository.setGeminiApiKey(apiKey)
 
-            // Fetch models when API key changes and is not empty
-            if (apiKey.isNotBlank()) {
+            // Only refresh the shared model list when Gemini is the active provider.
+            if (apiKey.isNotBlank() && aiProvider.value == "GEMINI") {
                 fetchAvailableModels(apiKey, "GEMINI")
-            } else {
-                // Clear models if API key is empty
+            } else if (apiKey.isBlank()) {
                 _uiState.update {
                     it.copy(
-                        availableModels = emptyList(),
+                        availableModels = if (aiProvider.value == "GEMINI") emptyList() else it.availableModels,
                         modelsFetchError = null
                     )
                 }
@@ -808,14 +808,12 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             aiPreferencesRepository.setDeepseekApiKey(apiKey)
             
-            // Fetch models when API key changes and is not empty
             if (apiKey.isNotBlank() && aiProvider.value == "DEEPSEEK") {
                 fetchAvailableModels(apiKey, "DEEPSEEK")
             } else if (apiKey.isBlank()) {
-                // Clear models if API key is empty
                 _uiState.update {
                     it.copy(
-                        availableModels = emptyList(),
+                        availableModels = if (aiProvider.value == "DEEPSEEK") emptyList() else it.availableModels,
                         modelsFetchError = null
                     )
                 }
@@ -849,7 +847,13 @@ class SettingsViewModel @Inject constructor(
             val result = runCatching {
                 val provider = AiProvider.fromString(providerName)
                 val client = aiClientFactory.createClient(provider, apiKey)
-                client.getAvailableModels(apiKey).map { modelName ->
+                val fetchedModels = client.getAvailableModels()
+                val normalizedModels = if (fetchedModels.isEmpty()) {
+                    listOf(client.getDefaultModel())
+                } else {
+                    fetchedModels
+                }
+                normalizedModels.map { modelName ->
                     GeminiModel(name = modelName, displayName = formatModelDisplayName(modelName))
                 }
             }
@@ -864,22 +868,26 @@ class SettingsViewModel @Inject constructor(
                     )
                 }
 
-                // Auto-select first model if none is selected
+                // Keep the persisted model valid for the currently selected provider.
                 val currentModel = when (providerName) {
                     "DEEPSEEK" -> aiPreferencesRepository.deepseekModel.first()
                     else -> aiPreferencesRepository.geminiModel.first()
                 }
-                if (currentModel.isEmpty() && models.isNotEmpty()) {
+                val preferredModel = currentModel.takeIf { selected ->
+                    selected.isNotBlank() && models.any { it.name == selected }
+                } ?: models.firstOrNull()?.name
+
+                if (preferredModel != null && preferredModel != currentModel) {
                     when (providerName) {
-                        "DEEPSEEK" -> aiPreferencesRepository.setDeepseekModel(models.first().name)
-                        else -> aiPreferencesRepository.setGeminiModel(models.first().name)
+                        "DEEPSEEK" -> aiPreferencesRepository.setDeepseekModel(preferredModel)
+                        else -> aiPreferencesRepository.setGeminiModel(preferredModel)
                     }
                 }
             }.onFailure { error ->
                 _uiState.update {
                     it.copy(
                         isLoadingModels = false,
-                        modelsFetchError = error.message ?: "Failed to fetch models"
+                        modelsFetchError = AiErrorMessageResolver.toUserMessage(context, error)
                     )
                 }
             }

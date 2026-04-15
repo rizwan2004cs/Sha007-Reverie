@@ -5,7 +5,8 @@ package com.theveloper.pixelplay.data.ai.provider
  * Defines common operations for text generation and metadata completion
  */
 interface AiClient {
-    
+    val provider: AiProvider
+
     /**
      * Generate text content based on a prompt
      * @param model The model identifier to use
@@ -17,21 +18,53 @@ interface AiClient {
     
     /**
      * Get list of available models for this provider
-     * @param apiKey The API key to use
      * @return List of available model names
      */
-    suspend fun getAvailableModels(apiKey: String): List<String>
-    
-    /**
-     * Validate the API key
-     * @param apiKey The API key to validate
-     * @return true if valid, false otherwise
-     */
-    suspend fun validateApiKey(apiKey: String): Boolean
-    
+    suspend fun getAvailableModels(): List<String>
+
     /**
      * Get the default model for this provider
      * @return Default model identifier
      */
     fun getDefaultModel(): String
+
+    fun normalizeModel(model: String): String = model.trim().removePrefix("models/")
+
+    fun isModelSupported(model: String): Boolean = normalizeModel(model).isNotBlank()
+
+    suspend fun resolveModel(requestedModel: String): String {
+        val normalizedRequested = normalizeModel(requestedModel)
+        val candidate = normalizedRequested.ifBlank { normalizeModel(getDefaultModel()) }
+
+        if (!isModelSupported(candidate)) {
+            throw AiClientException.invalidModel(provider, candidate)
+        }
+
+        val availableModels: List<String> = try {
+            getAvailableModels()
+                .map(::normalizeModel)
+                .filter(String::isNotBlank)
+                .distinct()
+        } catch (error: AiClientException) {
+            when (error.kind) {
+                AiErrorKind.API_KEY_MISSING,
+                AiErrorKind.INVALID_MODEL,
+                AiErrorKind.AUTHENTICATION,
+                AiErrorKind.RATE_LIMIT,
+                AiErrorKind.NOT_FOUND,
+                AiErrorKind.BAD_REQUEST -> throw error
+                AiErrorKind.NETWORK,
+                AiErrorKind.INVALID_RESPONSE,
+                AiErrorKind.UNKNOWN -> emptyList<String>()
+            }
+        } catch (_: Exception) {
+            emptyList<String>()
+        }
+
+        if (availableModels.isNotEmpty() && candidate !in availableModels) {
+            throw AiClientException.invalidModel(provider, candidate)
+        }
+
+        return candidate
+    }
 }

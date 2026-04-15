@@ -57,7 +57,7 @@ import timber.log.Timber
 class PixelPlayGlanceWidget : GlanceAppWidget() {
 
     companion object {
-        // Tamaños definidos para diferentes configuraciones del widget
+        // TamaÃ±os definidos para diferentes configuraciones del widget
         private val VERY_THIN_LAYOUT_SIZE = DpSize(width = 200.dp, height = 60.dp)
         private val THIN_LAYOUT_SIZE = DpSize(width = 250.dp, height = 80.dp)
         private val SMALL_HORIZONTAL_LAYOUT_SIZE = DpSize(width = 110.dp, height = 60.dp)
@@ -95,7 +95,7 @@ class PixelPlayGlanceWidget : GlanceAppWidget() {
         size: DpSize,
         context: Context
     ) {
-        val title = playerInfo.songTitle.ifEmpty { "PixelPlayer" }
+        val title = playerInfo.songTitle.ifEmpty { "sha007Reverie" }
         val artist = playerInfo.artistName.ifEmpty { "Toca para abrir" }
         val isPlaying = playerInfo.isPlaying
         val isFavorite = playerInfo.isFavorite
@@ -1414,7 +1414,7 @@ class PixelPlayGlanceWidget : GlanceAppWidget() {
     }
 }
 
-// Helper para formatear duración en Glance (no puede usar TimeUnit directamente)
+// Helper para formatear duraciÃ³n en Glance (no puede usar TimeUnit directamente)
 private fun formatDurationGlance(millis: Long): String {
     if (millis < 0) return "00:00"
     val totalSeconds = millis / 1000

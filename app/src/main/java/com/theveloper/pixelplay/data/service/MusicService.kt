@@ -135,8 +135,6 @@ class MusicService : MediaLibraryService() {
     private var keepPlayingInBackground = true
     private var isManualShuffleEnabled = false
     private var persistentShuffleEnabled = false
-    // Holds the previous main-thread UncaughtExceptionHandler so we can restore it in onDestroy.
-    private var previousMainThreadExceptionHandler: Thread.UncaughtExceptionHandler? = null
     // --- Counted Play State ---
     private var countedPlayActive = false
     private var countedPlayTarget = 0
@@ -152,6 +150,7 @@ class MusicService : MediaLibraryService() {
     private var castRemoteClientCallback: RemoteMediaClient.Callback? = null
     private var observedCastSession: CastSession? = null
     private var playbackSnapshotPersistJob: Job? = null
+    private var commandForegroundCleanupJob: Job? = null
     private var isRestoringPlaybackSnapshot = false
     private val audioManager by lazy {
         getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -160,6 +159,7 @@ class MusicService : MediaLibraryService() {
     private var shouldResumeAfterHeadsetReconnect = false
     private var lastNoisyPauseRealtimeMs = 0L
     private var resumeOnHeadsetReconnectEnabled = false
+    private var temporaryForegroundLeaseExpiryMs = 0L
 
     companion object {
         private const val TAG = "MusicService_PixelPlay"
@@ -196,6 +196,7 @@ class MusicService : MediaLibraryService() {
         private const val DEFAULT_STREAM_BUFFER_SIZE = 8 * 1024
         private const val WIDGET_ART_FAILURE_RETRY_MS = 30_000L
         private const val HEADSET_RECONNECT_RESUME_WINDOW_MS = 15_000L
+        private const val COMMAND_FOREGROUND_LEASE_MS = 5_000L
     }
 
     private val playerSwapListener: (Player) -> Unit = { newPlayer ->
@@ -219,18 +220,6 @@ class MusicService : MediaLibraryService() {
         // Since startForeground() is final we cannot override it. Instead we intercept
         // ForegroundServiceStartNotAllowedException on the main thread before it reaches
         // ActivityThread and crashes the process.
-        val existingHandler = Thread.currentThread().uncaughtExceptionHandler
-        previousMainThreadExceptionHandler = existingHandler
-        Thread.currentThread().setUncaughtExceptionHandler { thread, throwable ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                throwable is ForegroundServiceStartNotAllowedException
-            ) {
-                Timber.tag(TAG).w(throwable, "Suppressed ForegroundServiceStartNotAllowedException from Media3/Cast internal path")
-            } else {
-                existingHandler?.uncaughtException(thread, throwable)
-            }
-        }
-
         super.onCreate()
         
         // Ensure engine is ready (re-initialize if service was restarted)
@@ -780,6 +769,7 @@ class MusicService : MediaLibraryService() {
 
     private fun startTemporaryForegroundForCommand() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        temporaryForegroundLeaseExpiryMs = SystemClock.elapsedRealtime() + COMMAND_FOREGROUND_LEASE_MS
         val notification = NotificationCompat.Builder(
             this,
             PixelPlayApplication.NOTIFICATION_CHANNEL_ID
@@ -869,16 +859,7 @@ class MusicService : MediaLibraryService() {
         }
         val startCommandResult = super.onStartCommand(intent, flags, startId)
         if (forcedForegroundStart) {
-            val player = mediaSession?.player
-            val isActivelyPlaying = player?.let {
-                it.playWhenReady &&
-                    it.playbackState != Player.STATE_IDLE &&
-                    it.playbackState != Player.STATE_ENDED
-            } == true
-            if (!isActivelyPlaying) {
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelfResult(startId)
-            }
+            scheduleForcedForegroundCleanup(startId)
         }
         return startCommandResult
     }
@@ -1184,7 +1165,12 @@ class MusicService : MediaLibraryService() {
             return
         }
 
-        if (player == null || !player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == Player.STATE_ENDED) {
+        if (!PlaybackServiceDecisions.shouldKeepServiceAfterTaskRemoved(
+                allowBackgroundPlayback = allowBackground,
+                player = player,
+                hasPendingReconnectResume = shouldResumeAfterHeadsetReconnect
+            )
+        ) {
             schedulePlaybackSnapshotPersist(immediate = true)
             stopSelf()
         }
@@ -1195,6 +1181,7 @@ class MusicService : MediaLibraryService() {
 
     override fun onDestroy() {
         playbackSnapshotPersistJob?.cancel()
+        commandForegroundCleanupJob?.cancel()
         stopCastWearSync()
         unregisterHeadsetReconnectMonitor()
         wearStatePublisher.clearState()
@@ -1210,8 +1197,6 @@ class MusicService : MediaLibraryService() {
         engine.release()
         controller.release()
         serviceScope.cancel()
-        Thread.currentThread().setUncaughtExceptionHandler(previousMainThreadExceptionHandler)
-        previousMainThreadExceptionHandler = null
         super.onDestroy()
     }
 
@@ -1945,15 +1930,12 @@ class MusicService : MediaLibraryService() {
     }
 
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        val playWhenReady = session.player.playWhenReady
-        val playbackState = session.player.playbackState
-
-        // Android 12+ (API 31+): Only request foreground when actively playing.
-        // This prevents requesting foreground start when player is idle/ended.
         val shouldStartInForeground = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            startInForegroundRequired && playWhenReady
-                    && playbackState != Player.STATE_IDLE
-                    && playbackState != Player.STATE_ENDED
+            PlaybackServiceDecisions.shouldRunInForeground(
+                startInForegroundRequired = startInForegroundRequired,
+                player = session.player,
+                hasTemporaryForegroundLease = hasTemporaryForegroundLease()
+            )
         } else {
             startInForegroundRequired
         }
@@ -1973,6 +1955,17 @@ class MusicService : MediaLibraryService() {
         // foreground, the subsequent Service.startForeground() call will just update
         // the notification without throwing.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val shouldRequestForegroundStart = PlaybackServiceDecisions.shouldRunInForeground(
+                startInForegroundRequired = true,
+                player = mediaSession?.player,
+                hasTemporaryForegroundLease = hasTemporaryForegroundLease()
+            )
+            if (!shouldRequestForegroundStart) {
+                Timber.tag(TAG).d(
+                    "Skipping startForegroundService; playback is not active and no temporary foreground lease is held."
+                )
+                return startService(serviceIntent)
+            }
             return try {
                 super.startForegroundService(serviceIntent)
             } catch (e: ForegroundServiceStartNotAllowedException) {
@@ -1992,6 +1985,35 @@ class MusicService : MediaLibraryService() {
         // Media3's shouldRunInForeground logic and can remove foreground status, leading to
         // ForegroundServiceStartNotAllowedException when async callbacks fire later.
         session.setMediaButtonPreferences(buttons)
+    }
+
+    private fun hasTemporaryForegroundLease(): Boolean {
+        return temporaryForegroundLeaseExpiryMs > SystemClock.elapsedRealtime()
+    }
+
+    private fun clearTemporaryForegroundLease() {
+        temporaryForegroundLeaseExpiryMs = 0L
+    }
+
+    private fun scheduleForcedForegroundCleanup(startId: Int) {
+        commandForegroundCleanupJob?.cancel()
+        commandForegroundCleanupJob = serviceScope.launch {
+            delay(COMMAND_FOREGROUND_LEASE_MS)
+
+            val shouldRelease = PlaybackServiceDecisions.shouldReleaseTemporaryForeground(
+                player = mediaSession?.player,
+                hasPendingReconnectResume = shouldResumeAfterHeadsetReconnect
+            )
+
+            clearTemporaryForegroundLease()
+
+            if (shouldRelease) {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelfResult(startId)
+            } else {
+                mediaSession?.let { refreshMediaSessionUi(it) }
+            }
+        }
     }
 
     private fun refreshMediaSessionUiWithFollowUp(

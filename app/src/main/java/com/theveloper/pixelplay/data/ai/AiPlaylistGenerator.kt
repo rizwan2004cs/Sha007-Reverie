@@ -2,6 +2,7 @@ package com.theveloper.pixelplay.data.ai
 
 import com.theveloper.pixelplay.data.DailyMixManager
 import com.theveloper.pixelplay.data.model.Song
+import com.theveloper.pixelplay.data.ai.provider.AiClientException
 import com.theveloper.pixelplay.data.preferences.AiPreferencesRepository
 import com.theveloper.pixelplay.data.ai.provider.AiClientFactory
 import com.theveloper.pixelplay.data.ai.provider.AiProvider
@@ -43,7 +44,7 @@ class AiPlaylistGenerator @Inject constructor(
             }
             
             if (apiKey.isBlank()) {
-                return Result.failure(Exception("API Key not configured for ${provider.displayName}."))
+                return Result.failure(AiClientException.missingApiKey(provider))
             }
             
             // Create AI client
@@ -63,7 +64,7 @@ class AiPlaylistGenerator @Inject constructor(
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiModel.first()
                 AiProvider.DEEPSEEK -> aiPreferencesRepository.deepseekModel.first()
             }
-            val modelName = selectedModel.ifBlank { aiClient.getDefaultModel() }
+            val modelName = aiClient.resolveModel(selectedModel)
 
             val samplingPool = when {
                 candidateSongs.isNullOrEmpty().not() -> candidateSongs ?: allSongs
@@ -135,7 +136,7 @@ class AiPlaylistGenerator @Inject constructor(
 
             val responseText = aiClient.generateContent(modelName, fullPrompt)
 
-            val songIds = extractPlaylistSongIds(responseText)
+            val songIds = AiResponseParser.extractPlaylistSongIds(json, responseText)
 
             // Map the returned IDs to the actual Song objects
             val songMap = allSongs.associateBy { it.id }
@@ -147,64 +148,28 @@ class AiPlaylistGenerator @Inject constructor(
 
             Result.success(generatedPlaylist)
 
+        } catch (e: AiClientException) {
+            Result.failure(e)
         } catch (e: IllegalArgumentException) {
-            Result.failure(Exception(e.message ?: "AI response did not contain a valid playlist."))
+            Result.failure(
+                AiClientException.invalidResponse(
+                    provider = AiProvider.fromString(aiPreferencesRepository.aiProvider.first()),
+                    detail = e.message ?: "AI response did not contain a valid playlist.",
+                    cause = e
+                )
+            )
         } catch (e: Exception) {
             val errorDetails = e.message?.takeIf { it.isNotBlank() }
                 ?: e.cause?.message?.takeIf { it.isNotBlank() }
                 ?: e::class.simpleName
                 ?: "Unknown error"
-            Result.failure(Exception("AI Error: $errorDetails", e))
+            Result.failure(
+                AiClientException.unknown(
+                    provider = AiProvider.fromString(aiPreferencesRepository.aiProvider.first()),
+                    detail = errorDetails,
+                    cause = e
+                )
+            )
         }
-    }
-
-    private fun extractPlaylistSongIds(rawResponse: String): List<String> {
-        val sanitized = rawResponse
-            .replace("```json", "")
-            .replace("```", "")
-            .trim()
-
-        for (startIndex in sanitized.indices) {
-            if (sanitized[startIndex] != '[') continue
-
-            var depth = 0
-            var inString = false
-            var isEscaped = false
-
-            for (index in startIndex until sanitized.length) {
-                val character = sanitized[index]
-
-                if (inString) {
-                    if (isEscaped) {
-                        isEscaped = false
-                        continue
-                    }
-
-                    when (character) {
-                        '\\' -> isEscaped = true
-                        '"' -> inString = false
-                    }
-                    continue
-                }
-
-                when (character) {
-                    '"' -> inString = true
-                    '[' -> depth++
-                    ']' -> {
-                        depth--
-                        if (depth == 0) {
-                            val candidate = sanitized.substring(startIndex, index + 1)
-                            val decoded = runCatching { json.decodeFromString<List<String>>(candidate) }
-                            if (decoded.isSuccess) {
-                                return decoded.getOrThrow()
-                            }
-                            break
-                        }
-                    }
-                }
-            }
-        }
-
-        throw IllegalArgumentException("AI response did not contain a valid playlist.")
     }
 }

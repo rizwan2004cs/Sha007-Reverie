@@ -662,7 +662,7 @@ fun WelcomePage() {
                 ),
             )
             Text(
-                text = "PixelPlayer",
+                text = "sha007Reverie",
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontFamily = GoogleSansRounded,
                     fontSize = 46.sp,
@@ -685,7 +685,7 @@ fun WelcomePage() {
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "β",
+                    text = "Î²",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Black
                 )
@@ -786,7 +786,7 @@ fun MediaPermissionPage(
     PermissionPageLayout(
         title = "Media Permission",
         granted = isGranted,
-        description = "PixelPlayer needs access to your audio files to build your music library.",
+        description = "sha007Reverie needs access to your audio files to build your music library.",
         buttonText = if (isGranted) "Permission Granted" else "Grant Media Permission",
         buttonEnabled = !isGranted,
         icons = mediaIcons,
@@ -858,7 +858,7 @@ fun AlarmsPermissionPage(
     PermissionPageLayout(
         title = "Alarms & Reminders",
         granted = isGranted,
-        description = "Optional, but recommended if you use Sleep Timer and want PixelPlayer to stop playback exactly on time.",
+        description = "Optional, but recommended if you use Sleep Timer and want sha007Reverie to stop playback exactly on time.",
         buttonText = if (isGranted) "Permission Granted" else "Grant Permission",
         buttonEnabled = !isGranted,
         icons = icons,
@@ -895,7 +895,7 @@ fun AllFilesPermissionPage(uiState: SetupUiState) {
     PermissionPageLayout(
         title = "All Files Access",
         granted = isGranted,
-        description = "For some Android versions, PixelPlayer needs broader file access to find all your music.",
+        description = "For some Android versions, sha007Reverie needs broader file access to find all your music.",
         buttonText = if(isGranted) "Permission Granted" else "Go to Settings",
         buttonEnabled = !isGranted,
         icons = fileIcons,
@@ -921,7 +921,7 @@ fun BackupRestorePage(
 
     PermissionPageLayout(
         title = "Do you have a backup?",
-        description = "If you already have a PixelPlayer backup, restore it now and skip most of the remaining setup on this device.",
+        description = "If you already have a sha007Reverie backup, restore it now and skip most of the remaining setup on this device.",
         buttonText = when {
             uiState.isInspectingBackup -> "Inspecting backup"
             uiState.isRestoringBackup -> "Restoring backup"
@@ -958,7 +958,7 @@ fun BackupRestorePage(
                         ) {
                             LoadingIndicator(modifier = Modifier.size(20.dp))
                             Text(
-                                text = "Checking backup package…",
+                                text = "Checking backup packageâ€¦",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1013,7 +1013,7 @@ fun ThemeSelectionPage(
             ThemeOptionItem(
                 mode = AppThemeMode.DARK,
                 title = "Dark",
-                description = "The default Material 3 dark look for PixelPlay.",
+                description = "The default Material 3 dark look for sha007Reverie.",
                 icon = Icons.Rounded.DarkMode,
                 recommended = true
             ),
@@ -1513,7 +1513,7 @@ fun BatteryOptimizationPage(
     PermissionPageLayout(
         title = "Battery Optimization",
         granted = isIgnoringBatteryOptimizations,
-        description = "Some Android devices aggressively kill background apps. Disable battery optimization for PixelPlayer to prevent unexpected playback interruptions.",
+        description = "Some Android devices aggressively kill background apps. Disable battery optimization for sha007Reverie to prevent unexpected playback interruptions.",
         buttonText = if (isIgnoringBatteryOptimizations) "Permission Granted" else "Disable Optimization",
         buttonEnabled = !isIgnoringBatteryOptimizations,
         icons = batteryIcons,
@@ -1926,13 +1926,13 @@ fun LibraryNavigationPillSetupShow(
 
     val pillRadius = 26.dp
     val innerRadius = 4.dp
-    // Radio para cuando está expandido/seleccionado (totalmente redondo)
+    // Radio para cuando estÃ¡ expandido/seleccionado (totalmente redondo)
     val expandedRadius = 60.dp
 
-    // Animación Esquina Flecha (Interna):
+    // AnimaciÃ³n Esquina Flecha (Interna):
     // Depende de 'isExpanded':
-    // - true: Se vuelve redonda (expandedRadius/pillRadius) separándose visualmente.
-    // - false: Se mantiene recta (innerRadius) pareciendo unida al título.
+    // - true: Se vuelve redonda (expandedRadius/pillRadius) separÃ¡ndose visualmente.
+    // - false: Se mantiene recta (innerRadius) pareciendo unida al tÃ­tulo.
     val animatedArrowCorner by animateFloatAsState(
         targetValue = if (isExpanded) pillRadius.value else innerRadius.value,
         label = "ArrowCornerAnimation"
@@ -2007,7 +2007,7 @@ fun LibraryNavigationPillSetupShow(
             }
         }
 
-        // --- PARTE 2: FLECHA (Cambia de forma según estado) ---
+        // --- PARTE 2: FLECHA (Cambia de forma segÃºn estado) ---
         Surface(
             shape = RoundedCornerShape(
                 topStart = animatedArrowCorner.dp, // Anima entre 4.dp y 26.dp
@@ -2042,7 +2042,7 @@ fun LibraryNavigationPillSetupShow(
                 Icon(
                     modifier = Modifier.rotate(arrowRotation),
                     imageVector = Icons.Rounded.KeyboardArrowDown,
-                    contentDescription = "Expandir menú",
+                    contentDescription = "Expandir menÃº",
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
@@ -2051,13 +2051,13 @@ fun LibraryNavigationPillSetupShow(
 }
 
 /**
- * Una Bottom Bar flotante con un diseño expresivo inspirado en Material 3,
+ * Una Bottom Bar flotante con un diseÃ±o expresivo inspirado en Material 3,
  * que incluye una onda sinusoidal animada en la parte superior.
  *
  * @param modifier Modificador para el Composable.
- * @param pagerState El estado del Pager para mostrar el indicador de página.
- * @param onNextClicked Lambda que se invoca al pulsar el botón "Siguiente".
- * @param onFinishClicked Lambda que se invoca al pulsar el botón "Finalizar".
+ * @param pagerState El estado del Pager para mostrar el indicador de pÃ¡gina.
+ * @param onNextClicked Lambda que se invoca al pulsar el botÃ³n "Siguiente".
+ * @param onFinishClicked Lambda que se invoca al pulsar el botÃ³n "Finalizar".
  */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
     ExperimentalMaterial3ExpressiveApi::class
@@ -2072,14 +2072,14 @@ fun SetupBottomBar(
     isNextButtonEnabled: Boolean,
     isFinishButtonEnabled: Boolean
 ) {
-    // --- Animaciones para el Morphing y Rotación ---
+    // --- Animaciones para el Morphing y RotaciÃ³n ---
     val morphAnimationSpec = tween<Float>(durationMillis = 600, easing = FastOutSlowInEasing)
-    // Animación más lenta y sutil para la rotación
+    // AnimaciÃ³n mÃ¡s lenta y sutil para la rotaciÃ³n
     val rotationAnimationSpec = tween<Float>(durationMillis = 900, easing = FastOutSlowInEasing)
 
     // 1. Determina los porcentajes de las esquinas para la forma objetivo
     val targetShapeValues = when (pagerState.currentPage % 3) {
-        0 -> listOf(50f, 50f, 50f, 50f) // Círculo (50% en todas las esquinas)
+        0 -> listOf(50f, 50f, 50f, 50f) // CÃ­rculo (50% en todas las esquinas)
         1 -> listOf(26f, 26f, 26f, 26f) // Cuadrado Redondeado
         else -> listOf(18f, 50f, 18f, 50f) // Forma de "Hoja"
     }
@@ -2090,7 +2090,7 @@ fun SetupBottomBar(
     val animatedBottomStart by animateFloatAsState(targetShapeValues[2], morphAnimationSpec, label = "BottomStart")
     val animatedBottomEnd by animateFloatAsState(targetShapeValues[3], morphAnimationSpec, label = "BottomEnd")
 
-    // 3. Anima la rotación del botón para que gire 360 grados en cada cambio de página.
+    // 3. Anima la rotaciÃ³n del botÃ³n para que gire 360 grados en cada cambio de pÃ¡gina.
     val animatedRotation by animateFloatAsState(
         targetValue = pagerState.currentPage * 360f,
         animationSpec = rotationAnimationSpec,
@@ -2175,7 +2175,7 @@ fun SetupBottomBar(
                     MaterialTheme.colorScheme.onPrimaryContainer
                 }
 
-                // 4. Aplica la forma y rotación animadas al botón
+                // 4. Aplica la forma y rotaciÃ³n animadas al botÃ³n
                 MediumExtendedFloatingActionButton(
                     onClick = if (isLastPage) onFinishClicked else onNextClicked,
                     shape = AbsoluteSmoothCornerShape(
@@ -2195,7 +2195,7 @@ fun SetupBottomBar(
                         .rotate(animatedRotation)
                         .padding(end = 0.dp)
                 ) {
-                    // 5. Aplica una contra-rotación al contenido del botón (el icono)
+                    // 5. Aplica una contra-rotaciÃ³n al contenido del botÃ³n (el icono)
                     AnimatedContent(
                         modifier = Modifier.rotate(-animatedRotation),
                         targetState = pagerState.currentPage < pagerState.pageCount - 1,

@@ -4,10 +4,15 @@ import com.theveloper.pixelplay.data.model.Song
 import kotlinx.serialization.SerializationException
 import com.theveloper.pixelplay.data.preferences.AiPreferencesRepository
 import com.theveloper.pixelplay.data.ai.provider.AiClientFactory
+import com.theveloper.pixelplay.data.ai.provider.AiClientException
 import com.theveloper.pixelplay.data.ai.provider.AiProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -28,10 +33,6 @@ class AiMetadataGenerator @Inject constructor(
         // Removed DEFAULT_GEMINI_MODEL - now handled by provider implementations
     }
 
-    private fun cleanJson(jsonString: String): String {
-        return jsonString.replace("```json", "").replace("```", "").trim()
-    }
-
     suspend fun generate(
         song: Song,
         fieldsToComplete: List<String>
@@ -48,7 +49,7 @@ class AiMetadataGenerator @Inject constructor(
             }
             
             if (apiKey.isBlank()) {
-                return Result.failure(Exception("API Key not configured for ${provider.displayName}."))
+                return Result.failure(AiClientException.missingApiKey(provider))
             }
             
             // Create AI client
@@ -59,7 +60,7 @@ class AiMetadataGenerator @Inject constructor(
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiModel.first()
                 AiProvider.DEEPSEEK -> aiPreferencesRepository.deepseekModel.first()
             }
-            val modelName = selectedModel.ifBlank { aiClient.getDefaultModel() }
+            val modelName = aiClient.resolveModel(selectedModel)
 
             val customSystemPrompt = when (provider) {
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiSystemPrompt.first()
@@ -99,20 +100,58 @@ class AiMetadataGenerator @Inject constructor(
             val responseText = aiClient.generateContent(modelName, fullPrompt)
             if (responseText.isBlank()) {
                 Timber.e("AI returned an empty or null response.")
-                return Result.failure(Exception("AI returned an empty response."))
+                return Result.failure(
+                    AiClientException.invalidResponse(provider, "AI returned an empty response.")
+                )
             }
 
             Timber.d("AI Response: $responseText")
-            val cleanedJson = cleanJson(responseText)
-            val metadata = json.decodeFromString<SongMetadata>(cleanedJson)
+            val cleanedJson = AiResponseParser.extractFirstJsonObject(responseText)
+                ?: AiResponseParser.stripCodeFences(responseText)
+            val parsedElement = json.parseToJsonElement(cleanedJson)
+            val metadataObject = parsedElement as? JsonObject
+            if (metadataObject == null) {
+                return Result.failure(
+                    AiClientException.invalidResponse(
+                        provider,
+                        "AI response did not contain a metadata object."
+                    )
+                )
+            }
 
-            Result.success(metadata)
+            Result.success(metadataObject.toSongMetadata())
+        } catch (e: AiClientException) {
+            Result.failure(e)
         } catch (e: SerializationException) {
             Timber.e(e, "Error deserializing AI response.")
-            Result.failure(Exception("Failed to parse AI response: ${e.message}"))
+            Result.failure(
+                AiClientException.invalidResponse(
+                    provider = AiProvider.fromString(aiPreferencesRepository.aiProvider.first()),
+                    detail = "Failed to parse AI response: ${e.message}",
+                    cause = e
+                )
+            )
         } catch (e: Exception) {
             Timber.e(e, "Generic error in AiMetadataGenerator.")
-            Result.failure(Exception("AI Error: ${e.message}"))
+            Result.failure(
+                AiClientException.unknown(
+                    provider = AiProvider.fromString(aiPreferencesRepository.aiProvider.first()),
+                    detail = e.message ?: "Unknown AI error.",
+                    cause = e
+                )
+            )
         }
+    }
+
+    private fun JsonObject.toSongMetadata(): SongMetadata {
+        fun JsonElement?.stringValue(): String? =
+            this?.jsonPrimitive?.contentOrNull?.trim()
+
+        return SongMetadata(
+            title = this["title"].stringValue(),
+            artist = this["artist"].stringValue(),
+            album = this["album"].stringValue(),
+            genre = this["genre"].stringValue()
+        )
     }
 }

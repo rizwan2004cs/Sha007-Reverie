@@ -126,7 +126,7 @@ private val CoreMaintainer = Contributor(
     id = "theovilardo",
     displayName = "Theo Vilardo",
     role = "Creator and maintainer",
-    detail = "Building PixelPlayer with direct community feedback.",
+    detail = "Building sha007Reverie with direct community feedback.",
     avatarUrl = "https://avatars.githubusercontent.com/u/26845343?v=4",
     iconRes = R.drawable.round_developer_board_24,
     githubUrl = "https://github.com/theovilardo",
@@ -156,7 +156,7 @@ private val PinnedCommunityMembers = listOf(
         id = "colbycabrera",
         displayName = "@ColbyCabrera",
         role = "Early contributor",
-        detail = "Helped shape PixelPlayer in the first stages of the app.",
+        detail = "Helped shape sha007Reverie in the first stages of the app.",
         badge = "Early Support",
         iconRes = R.drawable.round_newspaper_24,
         githubUrl = "https://github.com/ColbyCabrera",
@@ -377,7 +377,7 @@ fun AboutScreen(
             item(key = "maintainer_title") {
                 AboutSectionHeader(
                     title = "Maintainer",
-                    subtitle = "The person behind PixelPlayer.",
+                    subtitle = "The person behind sha007Reverie.",
                     modifier = Modifier.padding(top = 24.dp),
                 )
             }
@@ -545,7 +545,7 @@ private fun AboutHeroCard(
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Text(
-                            text = "PixelPlayer",
+                            text = "sha007Reverie",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,

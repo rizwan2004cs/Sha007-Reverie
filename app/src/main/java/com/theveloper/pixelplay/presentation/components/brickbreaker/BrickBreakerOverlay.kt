@@ -527,7 +527,7 @@ fun BrickBreakerOverlay(
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                     Text(
-                        text = "PixelPlay",
+                        text = "sha007Reverie",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = colorScheme.onSurface

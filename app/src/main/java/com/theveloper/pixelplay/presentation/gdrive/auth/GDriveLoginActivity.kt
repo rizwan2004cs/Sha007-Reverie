@@ -379,7 +379,7 @@ private fun FolderSetupContent(
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Create \"PixelPlay Music\"",
+                        text = "Create \"sha007Reverie Music\"",
                         style = MaterialTheme.typography.titleSmall,
                         fontFamily = GoogleSansRounded,
                         fontWeight = FontWeight.SemiBold,

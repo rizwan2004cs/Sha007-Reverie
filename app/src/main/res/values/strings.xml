@@ -1,22 +1,22 @@
 <resources>
-    <string name="app_name">PixelPlayer</string>
-    <string name="app_name_change_title">App Name Change</string>
-    <string name="app_name_change_message">We have changed our app\'s name from PixelPlay to PixelPlayer due to a trademark-related issue. Keep playing!</string>
+    <string name="app_name">sha007Reverie</string>
+    <string name="app_name_change_title">About sha007Reverie</string>
+    <string name="app_name_change_message">sha007Reverie is ready. Keep playing!</string>
     <string name="do_not_show_again">Do not show again</string>
     <string name="dismiss">Dismiss</string>
     <string name="lyrics">Lyrics</string>
     <string name="close_lyrics_sheet">Close Lyrics Sheet</string>
-    <string name="loading_lyrics">Loading lyrics…</string>
+    <string name="loading_lyrics">Loading lyricsâ€¦</string>
     <string name="cant_find_lyrics">Couldn\'t find lyrics for this song.</string>
     <string name="lyrics_provided_by">Lyrics provided by</string>
     <string name="lrclib_uri">https://lrclib.net/</string>
     <string name="all_files_access_title">Permiso Especial Requerido</string>
-    <string name="all_files_access_description">Para poder editar los metadatos de tus canciones (archivos .mp3), PixelPlayer necesita un permiso especial de acceso a todos los archivos. Esto nos permitirá modificar las etiquetas de tus pistas directamente. Por favor, concede este permiso en la siguiente pantalla para habilitar la edición de metadatos.</string>
+    <string name="all_files_access_description">Para poder editar los metadatos de tus canciones (archivos .mp3), sha007Reverie necesita un permiso especial de acceso a todos los archivos. Esto nos permitirÃ¡ modificar las etiquetas de tus pistas directamente. Por favor, concede este permiso en la siguiente pantalla para habilitar la ediciÃ³n de metadatos.</string>
     <string name="grant_permission_button">Conceder Permiso</string>
     <string name="all_files_access_setting">All Files Access</string>
     <string name="lyrics_not_found">Lyrics not found</string>
     <string name="search_lyrics_online_prompt">Would you like to search for lyrics online?</string>
-    <string name="custom_search_hint">We couldn’t find lyrics automatically. You can edit the title or artist and try searching manually.</string>
+    <string name="custom_search_hint">We couldnâ€™t find lyrics automatically. You can edit the title or artist and try searching manually.</string>
     <string name="failed_to_search_for_lyrics">Failed to search for lyrics</string>
     <string name="failed_to_fetch_lyrics_from_remote">Failed to fetch lyrics from remote</string>
     <string name="lyrics_fetch_timeout">Connection timed out. Please check your internet connection.</string>
@@ -25,7 +25,7 @@
     <string name="found_n_matches_format">Found %d match(es)</string>
     <string name="searched_for_x_format">Searched for \"%s\"</string>
     <string name="search">Search</string>
-    <string name="searching_lyrics">Searching for lyrics…</string>
+    <string name="searching_lyrics">Searching for lyricsâ€¦</string>
     <string name="lyrics_embedded_already_available">Embedded lyrics already found. Online fetch skipped.</string>
     <string name="fetch_lyrics_show_options_title">Show lyric options</string>
     <string name="fetch_lyrics_show_options_subtitle">Always open the picker instead of auto-applying the first match</string>
@@ -35,13 +35,13 @@
     <string name="import_file">Import</string>
 
     <!-- Sync/Progress strings -->
-    <string name="sync_scanning">Scanning music files…</string>
-    <string name="sync_processing">Processing files…</string>
+    <string name="sync_scanning">Scanning music filesâ€¦</string>
+    <string name="sync_processing">Processing filesâ€¦</string>
     <string name="sync_files_progress">%1$d of %2$d files</string>
-    <string name="sync_in_progress">Syncing library…</string>
+    <string name="sync_in_progress">Syncing libraryâ€¦</string>
     <string name="sync_complete">Sync complete</string>
-    <string name="sync_pending">Waiting…</string>
-    <string name="syncing_library">Sincronizando biblioteca…</string>
+    <string name="sync_pending">Waitingâ€¦</string>
+    <string name="syncing_library">Sincronizando bibliotecaâ€¦</string>
     <string name="unknown_song_title">Unknown track</string>
     <string name="unknown_artist">Unknown artist</string>
     <string name="unknown_album">Unknown album</string>
@@ -71,7 +71,14 @@
     <string name="lyrics_later">Later</string>
 
     <!-- AI Playlist -->
-    <string name="ai_error_api_key">Please configure your Gemini API Key in Settings.</string>
+    <string name="ai_error_api_key">Please configure your AI provider API key in Settings.</string>
+    <string name="ai_error_auth">%1$s rejected the API key or credentials.</string>
+    <string name="ai_error_invalid_model">The selected %1$s model is unavailable. Pick another model in Settings.</string>
+    <string name="ai_error_rate_limit">%1$s rate limit reached. Please wait and try again.</string>
+    <string name="ai_error_not_found">%1$s could not find the selected model or endpoint.</string>
+    <string name="ai_error_bad_request">%1$s rejected the request: %2$s</string>
+    <string name="ai_error_network">Could not reach %1$s. Check your connection and try again.</string>
+    <string name="ai_error_invalid_response">%1$s returned a response sha007Reverie could not parse.</string>
     <string name="ai_error_generic">AI Error: %s</string>
     <string name="ai_no_songs_found">AI couldn\'t find any songs for your prompt.</string>
     <string name="ai_prompt_empty">Write an idea for your Daily Mix</string>
@@ -105,5 +112,5 @@
     <string name="widget_bar_4x1_desc">Compact player bar</string>
     <string name="widget_control_4x2_desc">Full controls with shuffle and repeat</string>
     <string name="widget_grid_2x2_desc">Minimalist square player</string>
-    <string name="service_processing_action">Processing playback action…</string>
+    <string name="service_processing_action">Processing playback actionâ€¦</string>
 </resources>

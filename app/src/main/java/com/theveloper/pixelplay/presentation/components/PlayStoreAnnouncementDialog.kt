@@ -46,7 +46,7 @@ object PlayStoreAnnouncementDefaults {
 
     val Template = PlayStoreAnnouncementUiModel(
         enabled = false,
-        title = "PixelPlay is now available on Google Play",
+        title = "sha007Reverie is now available on Google Play",
         body = "Use the stable channel on Google Play for release updates while we keep beta builds active.",
         playStoreUrl = null,
     )
@@ -123,7 +123,7 @@ fun PlayStoreAnnouncementDialog(
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Text(
-                            text = "PixelPlay",
+                            text = "sha007Reverie",
                             fontFamily = GoogleSansRounded,
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,

@@ -1,4 +1,4 @@
-# PixelPlayer 🎵
+# sha007Reverie Ã°Å¸Å½Âµ
 
 <p align="center">
   <img src="assets/icon.png" alt="App Icon" width="128"/>
@@ -17,11 +17,11 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/theovilardo/PixelPlayer/releases/latest">
-        <img src="https://img.shields.io/github/v/release/theovilardo/PixelPlayer?include_prereleases&logo=github&style=for-the-badge&label=Latest%20Release" alt="Latest Release">
+    <a href="https://github.com/rizwan2004cs/Sha007-Reverie/releases/latest">
+        <img src="https://img.shields.io/github/v/release/rizwan2004cs/Sha007-Reverie?include_prereleases&logo=github&style=for-the-badge&label=Latest%20Release" alt="Latest Release">
     </a>
-    <a href="https://github.com/theovilardo/PixelPlayer/releases">
-        <img src="https://img.shields.io/github/downloads/theovilardo/PixelPlayer/total?logo=github&style=for-the-badge" alt="Total Downloads">
+    <a href="https://github.com/rizwan2004cs/Sha007-Reverie/releases">
+        <img src="https://img.shields.io/github/downloads/rizwan2004cs/Sha007-Reverie/total?logo=github&style=for-the-badge" alt="Total Downloads">
     </a>
     <img src="https://img.shields.io/badge/Android-10%2B-green?style=for-the-badge&logo=android" alt="Android 11+">
     <img src="https://img.shields.io/badge/Kotlin-100%25-purple?style=for-the-badge&logo=kotlin" alt="Kotlin">
@@ -29,21 +29,21 @@
 
 ---
 
-## ‼️ DISCLAIMER
+## Ã¢â‚¬Â¼Ã¯Â¸Â DISCLAIMER
 - No fork of this project will recieve support, if you use a fork, ask the forker to support you.
 
 ---
 
-## ✨ Features
+## Ã¢Å“Â¨ Features
 
-### 🎨 Modern UI/UX
+### Ã°Å¸Å½Â¨ Modern UI/UX
 - **Material You** - Dynamic color theming that adapts to your wallpaper
 - **Smooth Animations** - Fluid transitions and micro-interactions
 - **Customizable UI** - Adjustable corner radius and navigation bar settings
 - **Dark/Light Theme** - Automatic or manual theme switching
 - **Album Art Colors** - Dynamic color extraction from album artwork
 
-### 🎵 Powerful Playback
+### Ã°Å¸Å½Âµ Powerful Playback
 - **Media3 ExoPlayer** - Industry-leading audio engine with FFmpeg support
 - **Background Playback** - Full media session integration
 - **Queue Management** - Drag-and-drop reordering
@@ -51,41 +51,41 @@
 - **Gapless Playback** - Seamless transitions between tracks
 - **Custom Transitions** - Configure crossfades between songs
 
-### 📚 Library Management
+### Ã°Å¸â€œÅ¡ Library Management
 - **Multi-format Support** - MP3, FLAC, AAC, OGG, WAV, and more
 - **Browse By** - Songs, Albums, Artists, Genres, Folders
 - **Smart Artist Parsing** - Configurable delimiters for multi-artist tracks
 - **Album Artist Grouping** - Proper album organization
 - **Folder Filtering** - Choose which directories to scan
 
-### 🔍 Discovery & Organization
+### Ã°Å¸â€Â Discovery & Organization
 - **Full-text Search** - Search across your entire library
 - **Daily Mix** - AI-powered personalized playlist based on listening habits
 - **Playlists** - Create and manage custom playlists
 - **Statistics** - Track your listening history and habits
 
-### 🎤 Lyrics
+### Ã°Å¸Å½Â¤ Lyrics
 - **Synchronized Lyrics** - LRC format via LRCLIB API
 - **Lyrics Editing** - Modify or add lyrics to your tracks
 - **Scrolling Display** - Follow along as you listen
 
-### 🖼️ Artist Artwork
+### Ã°Å¸â€“Â¼Ã¯Â¸Â Artist Artwork
 - **Deezer Integration** - Automatic artist images from Deezer API
 - **Smart Caching** - Memory (LRU) + database caching for offline access
 - **Fallback Icons** - Beautiful placeholders when images unavailable
 
-### 📲 Connectivity
+### Ã°Å¸â€œÂ² Connectivity
 - **Chromecast** - Stream to your TV or smart speakers
 - **Android Auto** - Full Android Auto support for in-car playback (Soon)
 - **Widgets** - Home screen control with Glance widgets
 
-### ⚙️ Advanced Features
+### Ã¢Å¡â„¢Ã¯Â¸Â Advanced Features
 - **Tag Editor** - Edit metadata with TagLib (MP3, FLAC, M4A support)
 - **AI Playlists** - Generate playlists with Gemini AI
 
 ---
 
-## 🛠️ Tech Stack
+## Ã°Å¸â€ºÂ Ã¯Â¸Â Tech Stack
 
 | Category | Technology |
 |----------|------------|
@@ -105,14 +105,14 @@
 
 ---
 
-## 📱 Requirements
+## Ã°Å¸â€œÂ± Requirements
 
 - **Android 11** (API 30) or higher
 - **4GB RAM** recommended for smooth performance
 
 ---
 
-## 🚀 Getting Started
+## Ã°Å¸Å¡â‚¬ Getting Started
 
 ### Prerequisites
 
@@ -124,7 +124,7 @@
 
 1. **Clone the repository**
    ```sh
-   git clone https://github.com/theovilardo/PixelPlayer.git
+   git clone https://github.com/rizwan2004cs/Sha007-Reverie.git
    ```
 
 2. **Open in Android Studio**
@@ -134,57 +134,57 @@
 
 3. **Sync and Build**
    - Wait for Gradle to sync dependencies
-   - Build the project (Build → Make Project)
+   - Build the project (Build Ã¢â€ â€™ Make Project)
 
 4. **Run**
    - Connect a device or start an emulator
-   - Click Run (▶️)
+   - Click Run (Ã¢â€“Â¶Ã¯Â¸Â)
 
 ---
 
-## ⬇️ Download
+## Ã¢Â¬â€¡Ã¯Â¸Â Download
 
 <p align="center">
-  <a href="https://github.com/theovilardo/PixelPlayer/releases/latest">
+  <a href="https://github.com/rizwan2004cs/Sha007-Reverie/releases/latest">
     <img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt="Get it on GitHub" height="60">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.theveloper.pixelplay%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Ftheovilardo%2FPixelPlayer%22%2C%22author%22%3A%22theovilardo%22%2C%22name%22%3A%22PixelPlayer%22%2C%22supportFixedAPKURL%22%3Afalse%7D">
+  <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.theveloper.pixelplay%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Ftheovilardo%2Fsha007Reverie%22%2C%22author%22%3A%22theovilardo%22%2C%22name%22%3A%22sha007Reverie%22%2C%22supportFixedAPKURL%22%3Afalse%7D">
     <img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="50">
   </a>
 </p>
 
 ---
 
-## 📂 Project Structure
+## Ã°Å¸â€œâ€š Project Structure
 
 ```
 app/src/main/java/com/theveloper/pixelplay/
-├── data/
-│   ├── database/       # Room entities, DAOs, migrations
-│   ├── model/          # Domain models (Song, Album, Artist, etc.)
-│   ├── network/        # API services (LRCLIB, Deezer)
-│   ├── preferences/    # DataStore preferences
-│   ├── repository/     # Data repositories
-│   ├── service/        # MusicService, HTTP server
-│   └── worker/         # WorkManager sync workers
-├── di/                 # Hilt dependency injection modules
-├── presentation/
-│   ├── components/     # Reusable Compose components
-│   ├── navigation/     # Navigation graph
-│   ├── screens/        # Screen composables
-│   └── viewmodel/      # ViewModels
-├── ui/
-│   ├── glancewidget/   # Home screen widgets
-│   └── theme/          # Colors, typography, theming
-└── utils/              # Extensions and utilities
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ data/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ database/       # Room entities, DAOs, migrations
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ model/          # Domain models (Song, Album, Artist, etc.)
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ network/        # API services (LRCLIB, Deezer)
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ preferences/    # DataStore preferences
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ repository/     # Data repositories
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ service/        # MusicService, HTTP server
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ worker/         # WorkManager sync workers
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ di/                 # Hilt dependency injection modules
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ presentation/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ components/     # Reusable Compose components
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ navigation/     # Navigation graph
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ screens/        # Screen composables
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ viewmodel/      # ViewModels
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ ui/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ glancewidget/   # Home screen widgets
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ theme/          # Colors, typography, theming
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ utils/              # Extensions and utilities
 ```
 
 ---
 
-## 🤝 Contributing
+## Ã°Å¸Â¤Â Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -196,12 +196,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📄 License
+## Ã°Å¸â€œâ€ž License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/theovilardo">theovilardo</a>
+  Made with Ã¢ÂÂ¤Ã¯Â¸Â by <a href="https://github.com/theovilardo">theovilardo</a>
 </p>

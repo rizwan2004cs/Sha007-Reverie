@@ -17,7 +17,7 @@ class AiClientFactory @Inject constructor() {
      */
     fun createClient(provider: AiProvider, apiKey: String): AiClient {
         if (apiKey.isBlank()) {
-            throw IllegalArgumentException("API Key cannot be blank for ${provider.displayName}")
+            throw AiClientException.missingApiKey(provider)
         }
         
         return when (provider) {

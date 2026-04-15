@@ -260,7 +260,7 @@ fun ArtistSettingsScreen(
             item {
                 InfoCard(
                     title = "About Multi-Artist Parsing",
-                    content = "PixelPlayer automatically splits artist tags containing multiple artists. This is useful for songs downloaded with yt-dlp or other tools that use delimiters like '/' to separate artists.\n\nBackslash (\\) can be used to escape delimiters."
+                    content = "sha007Reverie automatically splits artist tags containing multiple artists. This is useful for songs downloaded with yt-dlp or other tools that use delimiters like '/' to separate artists.\n\nBackslash (\\) can be used to escape delimiters."
                 )
             }
 
@@ -442,7 +442,7 @@ private fun ExamplesCard(
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     Text(
-                        text = "♪",
+                        text = "â™ª",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.padding(end = 8.dp)
@@ -454,7 +454,7 @@ private fun ExamplesCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = " → ",
+                        text = " â†’ ",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

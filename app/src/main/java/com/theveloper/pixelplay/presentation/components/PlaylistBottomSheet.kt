@@ -192,7 +192,7 @@ fun PlaylistBottomSheet(
                             if (hasActiveAiProviderApiKey) {
                                 playerViewModel.showAiPlaylistSheet()
                             } else {
-                                playerViewModel.sendToast("Set your Gemini API key first")
+                                playerViewModel.sendToast("Set your AI provider API key first")
                             }
                         }
                     )

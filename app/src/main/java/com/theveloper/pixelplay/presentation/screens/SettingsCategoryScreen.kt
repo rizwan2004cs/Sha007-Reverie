@@ -445,7 +445,7 @@ fun SettingsCategoryScreen(
                                         refreshRequested = true
                                         syncRequestObservedRunning = false
                                         syncIndicatorLabel = "Running full rescan"
-                                        Toast.makeText(context, "Full rescan started…", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Full rescan startedâ€¦", Toast.LENGTH_SHORT).show()
                                         settingsViewModel.fullSyncLibrary()
                                     },
                                     onRebuild = {
@@ -1059,7 +1059,7 @@ fun SettingsCategoryScreen(
                                 addBottomSpace = false
                             ) {
                                 SettingsItem(
-                                    title = "About PixelPlayer",
+                                    title = "About sha007Reverie",
                                     subtitle = "App version, credits, and more.",
                                     leadingIcon = { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.secondary) },
                                     trailingIcon = { Icon(Icons.Rounded.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
@@ -1211,7 +1211,7 @@ fun SettingsCategoryScreen(
                         refreshRequested = true
                         syncRequestObservedRunning = false
                         syncIndicatorLabel = "Rebuilding database"
-                        Toast.makeText(context, "Rebuilding database…", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Rebuilding databaseâ€¦", Toast.LENGTH_SHORT).show()
                         settingsViewModel.rebuildDatabase() 
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
@@ -1277,7 +1277,7 @@ fun SettingsCategoryScreen(
             onSelectionChanged = { exportSections = it },
             onConfirm = {
                 showExportDataDialog = false
-                val fileName = "PixelPlayer_Backup_${System.currentTimeMillis()}.pxpl"
+                val fileName = "sha007Reverie_Backup_${System.currentTimeMillis()}.pxpl"
                 exportLauncher.launch(fileName)
             }
         )
@@ -1754,7 +1754,7 @@ private fun BackupSectionSelectableCard(
                     )
                     if (detail != null && detail.entryCount > 0) {
                         Text(
-                            text = "${detail.entryCount} entries · Will replace current data",
+                            text = "${detail.entryCount} entries Â· Will replace current data",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.tertiary
                         )
@@ -1916,7 +1916,7 @@ private fun BackupTransferProgressDialog(progress: BackupTransferProgressUpdate)
                 )
 
                 Text(
-                    text = "$statusText • $stepText",
+                    text = "$statusText â€¢ $stepText",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -2235,7 +2235,7 @@ private fun BackupHistoryCard(
                     Text(
                         text = buildString {
                             append(dateText)
-                            if (sizeText.isNotEmpty()) append(" · $sizeText")
+                            if (sizeText.isNotEmpty()) append(" Â· $sizeText")
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2261,7 +2261,7 @@ private fun BackupHistoryCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "$moduleCount modules · v${entry.appVersion.ifEmpty { "?" }} · schema v${entry.schemaVersion}",
+                    text = "$moduleCount modules Â· v${entry.appVersion.ifEmpty { "?" }} Â· schema v${entry.schemaVersion}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )

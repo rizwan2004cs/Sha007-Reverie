@@ -386,7 +386,7 @@ fun NeteaseWebLoginScreen(
                 )
             ) {
                 Text(
-                    text = "Security note: your password is entered only in NetEase web pages. PixelPlay stores session cookies (MUSIC_U) to sync your library.",
+                    text = "Security note: your password is entered only in NetEase web pages. sha007Reverie stores session cookies (MUSIC_U) to sync your library.",
                     modifier = Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = GoogleSansRounded,

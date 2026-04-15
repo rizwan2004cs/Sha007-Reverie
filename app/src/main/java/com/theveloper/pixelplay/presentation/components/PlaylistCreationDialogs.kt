@@ -187,7 +187,7 @@ fun PlaylistCreationTypeDialog(
                     subtitle = if (isAiEnabled) {
                         "Generate a curated playlist with advanced controls."
                     } else {
-                        "Requires Gemini API key configured in settings."
+                        "Requires an AI provider API key configured in settings."
                     },
                     icon = {
                         Icon(

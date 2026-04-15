@@ -36,7 +36,7 @@ fun EasterEggScreen(
 
     LaunchedEffect(hasShownFanToast) {
         if (hasShownFanToast) return@LaunchedEffect
-        Toast.makeText(context, "Thank you for using PixelPlayer!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Thank you for using sha007Reverie!", Toast.LENGTH_SHORT).show()
         hasShownFanToast = true
     }
 

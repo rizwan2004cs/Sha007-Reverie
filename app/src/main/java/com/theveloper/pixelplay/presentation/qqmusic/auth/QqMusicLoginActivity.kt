@@ -384,7 +384,7 @@ private fun QqMusicLoginScreen(
                 )
             ) {
                 Text(
-                    text = "Security note: your password is entered only in QQ Music web pages. PixelPlay stores session cookies to sync your library.",
+                    text = "Security note: your password is entered only in QQ Music web pages. sha007Reverie stores session cookies to sync your library.",
                     modifier = Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = GoogleSansRounded,
