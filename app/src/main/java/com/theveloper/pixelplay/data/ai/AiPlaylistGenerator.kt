@@ -64,7 +64,10 @@ class AiPlaylistGenerator @Inject constructor(
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiModel.first()
                 AiProvider.DEEPSEEK -> aiPreferencesRepository.deepseekModel.first()
             }
-            val modelName = aiClient.resolveModel(selectedModel)
+            val modelName = aiClient.resolveModel(
+                requestedModel = selectedModel,
+                verifyAvailability = false
+            )
 
             val samplingPool = when {
                 candidateSongs.isNullOrEmpty().not() -> candidateSongs ?: allSongs
@@ -79,8 +82,8 @@ class AiPlaylistGenerator @Inject constructor(
                 }
             }
 
-            // To optimize cost, cap the context size and shuffle it a bit for diversity
-            val sampleSize = max(minLength, 80).coerceAtMost(200)
+            // Keep prompts smaller so playlist generation is more likely to fit free-tier quotas.
+            val sampleSize = max(minLength, 48).coerceAtMost(120)
             val songSample = samplingPool.shuffled().take(sampleSize)
 
             val songScores = songSample.associate { it.id to dailyMixManager.getScore(it.id) }

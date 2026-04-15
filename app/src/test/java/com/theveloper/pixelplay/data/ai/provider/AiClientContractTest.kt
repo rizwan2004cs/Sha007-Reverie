@@ -62,6 +62,26 @@ class AiClientContractTest {
     }
 
     @Test
+    fun `resolveModel skips remote availability lookup when verification is disabled`() {
+        val client = FakeAiClient(
+            availableModelsError = AiClientException.fromHttpStatus(
+                provider = AiProvider.GEMINI,
+                statusCode = 429,
+                detail = "Quota exceeded on discovery endpoint"
+            )
+        )
+
+        val resolved = kotlinx.coroutines.runBlocking {
+            client.resolveModel(
+                requestedModel = "gemini-2.5-flash",
+                verifyAvailability = false
+            )
+        }
+
+        assertEquals("gemini-2.5-flash", resolved)
+    }
+
+    @Test
     fun `http status mapping classifies 429 as rate limit`() {
         val error = AiClientException.fromHttpStatus(
             provider = AiProvider.DEEPSEEK,

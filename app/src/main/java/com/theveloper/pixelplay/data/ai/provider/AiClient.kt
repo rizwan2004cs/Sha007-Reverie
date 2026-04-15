@@ -32,12 +32,21 @@ interface AiClient {
 
     fun isModelSupported(model: String): Boolean = normalizeModel(model).isNotBlank()
 
-    suspend fun resolveModel(requestedModel: String): String {
+    suspend fun resolveModel(
+        requestedModel: String,
+        verifyAvailability: Boolean = true
+    ): String {
         val normalizedRequested = normalizeModel(requestedModel)
         val candidate = normalizedRequested.ifBlank { normalizeModel(getDefaultModel()) }
 
         if (!isModelSupported(candidate)) {
             throw AiClientException.invalidModel(provider, candidate)
+        }
+
+        // Generation should not depend on a separate model-list lookup, because some providers
+        // throttle or restrict discovery endpoints independently from text generation.
+        if (!verifyAvailability) {
+            return candidate
         }
 
         val availableModels: List<String> = try {

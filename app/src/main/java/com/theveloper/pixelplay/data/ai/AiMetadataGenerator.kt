@@ -60,7 +60,10 @@ class AiMetadataGenerator @Inject constructor(
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiModel.first()
                 AiProvider.DEEPSEEK -> aiPreferencesRepository.deepseekModel.first()
             }
-            val modelName = aiClient.resolveModel(selectedModel)
+            val modelName = aiClient.resolveModel(
+                requestedModel = selectedModel,
+                verifyAvailability = false
+            )
 
             val customSystemPrompt = when (provider) {
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiSystemPrompt.first()
