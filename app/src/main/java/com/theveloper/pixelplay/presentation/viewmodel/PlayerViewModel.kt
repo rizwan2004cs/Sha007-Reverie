@@ -398,10 +398,12 @@ class PlayerViewModel @Inject constructor(
     val hasActiveAiProviderApiKey: StateFlow<Boolean> = combine(
         aiPreferencesRepository.aiProvider,
         aiPreferencesRepository.geminiApiKey,
-        aiPreferencesRepository.deepseekApiKey
-    ) { provider, geminiKey, deepseekKey ->
+        aiPreferencesRepository.deepseekApiKey,
+        aiPreferencesRepository.groqApiKey
+    ) { provider, geminiKey, deepseekKey, groqKey ->
         when (provider) {
             "DEEPSEEK" -> deepseekKey.isNotBlank()
+            "GROQ" -> groqKey.isNotBlank()
             else -> geminiKey.isNotBlank()
         }
     }.stateIn(

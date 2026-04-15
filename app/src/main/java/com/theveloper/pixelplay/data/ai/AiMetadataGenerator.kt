@@ -46,6 +46,7 @@ class AiMetadataGenerator @Inject constructor(
             val apiKey = when (provider) {
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiApiKey.first()
                 AiProvider.DEEPSEEK -> aiPreferencesRepository.deepseekApiKey.first()
+                AiProvider.GROQ -> aiPreferencesRepository.groqApiKey.first()
             }
             
             if (apiKey.isBlank()) {
@@ -59,6 +60,7 @@ class AiMetadataGenerator @Inject constructor(
             val selectedModel = when (provider) {
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiModel.first()
                 AiProvider.DEEPSEEK -> aiPreferencesRepository.deepseekModel.first()
+                AiProvider.GROQ -> aiPreferencesRepository.groqModel.first()
             }
             val modelName = aiClient.resolveModel(
                 requestedModel = selectedModel,
@@ -68,6 +70,7 @@ class AiMetadataGenerator @Inject constructor(
             val customSystemPrompt = when (provider) {
                 AiProvider.GEMINI -> aiPreferencesRepository.geminiSystemPrompt.first()
                 AiProvider.DEEPSEEK -> aiPreferencesRepository.deepseekSystemPrompt.first()
+                AiProvider.GROQ -> aiPreferencesRepository.groqSystemPrompt.first()
             }
 
             val fieldsJson = fieldsToComplete.joinToString(separator = ", ") { "\"$it\"" }

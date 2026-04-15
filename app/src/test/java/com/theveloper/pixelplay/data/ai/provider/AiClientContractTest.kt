@@ -94,6 +94,11 @@ class AiClientContractTest {
         assertTrue(error.detail.contains("Too many requests"))
     }
 
+    @Test
+    fun `AiProvider parses Groq values`() {
+        assertEquals(AiProvider.GROQ, AiProvider.fromString("GROQ"))
+    }
+
     private class FakeAiClient(
         private val availableModels: List<String> = emptyList(),
         private val availableModelsError: AiClientException? = null

@@ -1,6 +1,7 @@
 package com.theveloper.pixelplay.data.ai.provider
 
-import com.google.genai.Client
+import com.openai.client.okhttp.OpenAIOkHttpClient
+import com.openai.models.chat.completions.ChatCompletionCreateParams
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
@@ -10,30 +11,28 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
- * Gemini AI provider implementation backed by Google's official Gen AI SDK.
- * We still keep lightweight HTTP model discovery because the SDK generation
- * path is the critical failure point we want to stabilize.
+ * Groq support built on top of the official OpenAI Java SDK pointed at Groq's
+ * OpenAI-compatible endpoint.
  */
-class GeminiAiClient(private val apiKey: String) : AiClient {
-    override val provider: AiProvider = AiProvider.GEMINI
+class GroqAiClient(private val apiKey: String) : AiClient {
+    override val provider: AiProvider = AiProvider.GROQ
 
     companion object {
-        private const val DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
-        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+        private const val DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
+        private const val BASE_URL = "https://api.groq.com/openai/v1"
     }
 
     @Serializable
-    private data class GeminiModelsResponse(val models: List<GeminiModelItem> = emptyList())
+    private data class GroqModelItem(val id: String)
 
     @Serializable
-    private data class GeminiModelItem(
-        val name: String,
-        val supportedGenerationMethods: List<String> = emptyList()
-    )
+    private data class GroqModelsResponse(val data: List<GroqModelItem> = emptyList())
 
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -47,22 +46,32 @@ class GeminiAiClient(private val apiKey: String) : AiClient {
     }
 
     private val sdkClient by lazy {
-        Client.builder()
+        OpenAIOkHttpClient.builder()
             .apiKey(apiKey)
+            .baseUrl(BASE_URL)
             .build()
     }
 
     override suspend fun generateContent(model: String, prompt: String): String {
         return withContext(Dispatchers.IO) {
-            val normalizedModel = normalizeModel(model).ifBlank { DEFAULT_GEMINI_MODEL }
+            val normalizedModel = normalizeModel(model).ifBlank { DEFAULT_GROQ_MODEL }
             try {
-                val response = sdkClient.models.generateContent(normalizedModel, prompt, null)
-                response.text()
+                val params = ChatCompletionCreateParams.builder()
+                    .model(normalizedModel)
+                    .addUserMessage(prompt)
+                    .build()
+
+                val response = sdkClient.chat().completions().create(params)
+                response.choices()
+                    .firstOrNull()
+                    ?.message()
+                    ?.content()
+                    ?.orElse(null)
                     ?.trim()
                     ?.takeIf { it.isNotEmpty() }
                     ?: throw AiClientException.invalidResponse(
                         provider,
-                        "Gemini response has no text content."
+                        "Groq response has no text content."
                     )
             } catch (error: AiClientException) {
                 throw error
@@ -75,56 +84,37 @@ class GeminiAiClient(private val apiKey: String) : AiClient {
     override suspend fun getAvailableModels(): List<String> {
         return withContext(Dispatchers.IO) {
             val request = Request.Builder()
-                .url("$BASE_URL/models?key=$apiKey")
+                .url("$BASE_URL/models")
+                .addHeader("Authorization", "Bearer $apiKey")
                 .get()
                 .build()
 
-            executeRequest(request, ::parseModelsFromResponse)
+            executeRequest(request) { responseBody ->
+                val modelsResponse = json.decodeFromString(GroqModelsResponse.serializer(), responseBody)
+                val models = modelsResponse.data
+                    .map { normalizeModel(it.id) }
+                    .filter(::isModelSupported)
+                    .distinct()
+                if (models.isEmpty()) getDefaultModels() else models.sorted()
+            }
         }
     }
 
-    override fun getDefaultModel(): String = DEFAULT_GEMINI_MODEL
+    override fun getDefaultModel(): String = DEFAULT_GROQ_MODEL
 
-    override fun normalizeModel(model: String): String = model.trim().removePrefix("models/")
+    override fun normalizeModel(model: String): String = model.trim()
 
     override fun isModelSupported(model: String): Boolean {
         val normalized = normalizeModel(model)
-        return normalized.startsWith("gemini", ignoreCase = true) &&
-            !normalized.contains("embedding", ignoreCase = true)
-    }
-
-    private fun parseModelsFromResponse(jsonResponse: String): List<String> {
-        val models = try {
-            json.decodeFromString(GeminiModelsResponse.serializer(), jsonResponse)
-                .models
-                .asSequence()
-                .filter { model ->
-                    model.supportedGenerationMethods.any { method ->
-                        method.equals("generateContent", ignoreCase = true)
-                    }
-                }
-                .map { normalizeModel(it.name) }
-                .filter(::isModelSupported)
-                .distinct()
-                .sorted()
-                .toList()
-        } catch (error: Exception) {
-            throw AiClientException.invalidResponse(
-                provider,
-                "Unable to parse Gemini model list.",
-                error
-            )
-        }
-
-        return if (models.isNotEmpty()) models else getDefaultModels()
+        return normalized.isNotBlank() &&
+            !normalized.contains("whisper", ignoreCase = true) &&
+            !normalized.contains("tts", ignoreCase = true)
     }
 
     private fun getDefaultModels(): List<String> {
         return listOf(
-            "gemini-2.5-flash",
-            "gemini-2.5-pro",
-            "gemini-1.5-flash",
-            "gemini-1.5-pro"
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant"
         )
     }
 
@@ -146,16 +136,16 @@ class GeminiAiClient(private val apiKey: String) : AiClient {
                 val body = responseBody.takeIf { it.isNotBlank() }
                     ?: throw AiClientException.invalidResponse(
                         provider,
-                        "Gemini returned an empty response body."
+                        "Groq returned an empty response body."
                     )
                 return onSuccess(body)
             }
         } catch (error: AiClientException) {
             throw error
         } catch (error: IOException) {
-            throw AiClientException.network(provider, error.message ?: "Gemini request failed.", error)
+            throw AiClientException.network(provider, error.message ?: "Groq request failed.", error)
         } catch (error: Exception) {
-            throw AiClientException.unknown(provider, error.message ?: "Gemini request failed.", error)
+            throw AiClientException.unknown(provider, error.message ?: "Groq request failed.", error)
         }
     }
 
@@ -171,14 +161,14 @@ class GeminiAiClient(private val apiKey: String) : AiClient {
 
         return AiClientException.sanitizeDetail(
             parsedMessage ?: responseBody.takeIf { it.isNotBlank() } ?: fallbackMessage,
-            fallbackMessage.ifBlank { "Gemini request failed." }
+            fallbackMessage.ifBlank { "Groq request failed." }
         )
     }
 
     private fun mapSdkException(error: Exception): AiClientException {
         val detail = AiClientException.sanitizeDetail(
             raw = error.message ?: error.cause?.message,
-            fallback = "Gemini request failed."
+            fallback = "Groq request failed."
         )
         val lowered = detail.lowercase()
 

@@ -180,6 +180,9 @@ class SettingsViewModel @Inject constructor(
 
     val deepseekSystemPrompt: StateFlow<String> = aiPreferencesRepository.deepseekSystemPrompt
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AiPreferencesRepository.DEFAULT_DEEPSEEK_SYSTEM_PROMPT)
+
+    val groqSystemPrompt: StateFlow<String> = aiPreferencesRepository.groqSystemPrompt
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AiPreferencesRepository.DEFAULT_GROQ_SYSTEM_PROMPT)
     
     // AI Provider Settings
     val aiProvider: StateFlow<String> = aiPreferencesRepository.aiProvider
@@ -189,6 +192,12 @@ class SettingsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
     
     val deepseekModel: StateFlow<String> = aiPreferencesRepository.deepseekModel
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
+    val groqApiKey: StateFlow<String> = aiPreferencesRepository.groqApiKey
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
+    val groqModel: StateFlow<String> = aiPreferencesRepository.groqModel
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
     private val fileExplorerStateHolder = FileExplorerStateHolder(userPreferencesRepository, viewModelScope, context)
@@ -788,6 +797,7 @@ class SettingsViewModel @Inject constructor(
             val apiKey = when (provider) {
                 "GEMINI" -> geminiApiKey.value
                 "DEEPSEEK" -> deepseekApiKey.value
+                "GROQ" -> groqApiKey.value
                 else -> ""
             }
 
@@ -828,6 +838,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun onGroqModelChange(model: String) {
+        viewModelScope.launch {
+            aiPreferencesRepository.setGroqModel(model)
+        }
+    }
+
     fun onDeepseekSystemPromptChange(prompt: String) {
         viewModelScope.launch {
             aiPreferencesRepository.setDeepseekSystemPrompt(prompt)
@@ -837,6 +853,18 @@ class SettingsViewModel @Inject constructor(
     fun resetDeepseekSystemPrompt() {
         viewModelScope.launch {
             aiPreferencesRepository.resetDeepseekSystemPrompt()
+        }
+    }
+
+    fun onGroqSystemPromptChange(prompt: String) {
+        viewModelScope.launch {
+            aiPreferencesRepository.setGroqSystemPrompt(prompt)
+        }
+    }
+
+    fun resetGroqSystemPrompt() {
+        viewModelScope.launch {
+            aiPreferencesRepository.resetGroqSystemPrompt()
         }
     }
 
@@ -871,6 +899,7 @@ class SettingsViewModel @Inject constructor(
                 // Keep the persisted model valid for the currently selected provider.
                 val currentModel = when (providerName) {
                     "DEEPSEEK" -> aiPreferencesRepository.deepseekModel.first()
+                    "GROQ" -> aiPreferencesRepository.groqModel.first()
                     else -> aiPreferencesRepository.geminiModel.first()
                 }
                 val preferredModel = currentModel.takeIf { selected ->
@@ -880,6 +909,7 @@ class SettingsViewModel @Inject constructor(
                 if (preferredModel != null && preferredModel != currentModel) {
                     when (providerName) {
                         "DEEPSEEK" -> aiPreferencesRepository.setDeepseekModel(preferredModel)
+                        "GROQ" -> aiPreferencesRepository.setGroqModel(preferredModel)
                         else -> aiPreferencesRepository.setGeminiModel(preferredModel)
                     }
                 }
@@ -890,6 +920,24 @@ class SettingsViewModel @Inject constructor(
                         modelsFetchError = AiErrorMessageResolver.toUserMessage(context, error)
                     )
                 }
+            }
+        }
+    }
+
+    fun onGroqApiKeyChange(apiKey: String) {
+        viewModelScope.launch {
+            aiPreferencesRepository.setGroqApiKey(apiKey)
+
+            if (apiKey.isNotBlank() && aiProvider.value == "GROQ") {
+                fetchAvailableModels(apiKey, "GROQ")
+            } else if (apiKey.isBlank()) {
+                _uiState.update {
+                    it.copy(
+                        availableModels = if (aiProvider.value == "GROQ") emptyList() else it.availableModels,
+                        modelsFetchError = null
+                    )
+                }
+                aiPreferencesRepository.setGroqModel("")
             }
         }
     }

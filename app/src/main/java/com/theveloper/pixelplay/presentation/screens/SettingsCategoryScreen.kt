@@ -187,6 +187,9 @@ fun SettingsCategoryScreen(
     val deepseekApiKey by settingsViewModel.deepseekApiKey.collectAsStateWithLifecycle()
     val deepseekModel by settingsViewModel.deepseekModel.collectAsStateWithLifecycle()
     val deepseekSystemPrompt by settingsViewModel.deepseekSystemPrompt.collectAsStateWithLifecycle()
+    val groqApiKey by settingsViewModel.groqApiKey.collectAsStateWithLifecycle()
+    val groqModel by settingsViewModel.groqModel.collectAsStateWithLifecycle()
+    val groqSystemPrompt by settingsViewModel.groqSystemPrompt.collectAsStateWithLifecycle()
     val currentPath by settingsViewModel.currentPath.collectAsStateWithLifecycle()
     val directoryChildren by settingsViewModel.currentDirectoryChildren.collectAsStateWithLifecycle()
     val availableStorages by settingsViewModel.availableStorages.collectAsStateWithLifecycle()
@@ -275,10 +278,11 @@ fun SettingsCategoryScreen(
     }
 
     // Fetch models on page load when API key exists and models are not already loaded
-    LaunchedEffect(category, aiProvider, geminiApiKey, deepseekApiKey) {
+    LaunchedEffect(category, aiProvider, geminiApiKey, deepseekApiKey, groqApiKey) {
         if (category == SettingsCategory.AI_INTEGRATION && !uiState.isLoadingModels) {
             val apiKey = when (aiProvider) {
                 "DEEPSEEK" -> deepseekApiKey
+                "GROQ" -> groqApiKey
                 else -> geminiApiKey
             }
             
@@ -818,7 +822,8 @@ fun SettingsCategoryScreen(
                                     description = "Choose your AI provider",
                                     options = mapOf(
                                         "GEMINI" to "Google Gemini",
-                                        "DEEPSEEK" to "DeepSeek"
+                                        "DEEPSEEK" to "DeepSeek",
+                                        "GROQ" to "Groq"
                                     ),
                                     selectedKey = aiProvider,
                                     onSelectionChanged = { settingsViewModel.onAiProviderChange(it) },
@@ -845,12 +850,21 @@ fun SettingsCategoryScreen(
                                             subtitle = "Get from DeepSeek Platform (api.deepseek.com)"
                                         )
                                     }
+                                    "GROQ" -> {
+                                        GeminiApiKeyItem(
+                                            apiKey = groqApiKey,
+                                            onApiKeySave = { settingsViewModel.onGroqApiKeyChange(it) },
+                                            title = "Groq API Key",
+                                            subtitle = "Get from Groq Console (console.groq.com)"
+                                        )
+                                    }
                                 }
                             }
 
                             // Model Selection Section
                             val hasApiKey = when (aiProvider) {
                                 "DEEPSEEK" -> deepseekApiKey.isNotBlank()
+                                "GROQ" -> groqApiKey.isNotBlank()
                                 else -> geminiApiKey.isNotBlank()
                             }
                             
@@ -895,11 +909,13 @@ fun SettingsCategoryScreen(
                                         val currentModel = when (aiProvider) {
                                             "GEMINI" -> geminiModel
                                             "DEEPSEEK" -> deepseekModel
+                                            "GROQ" -> groqModel
                                             else -> ""
                                         }
                                         val modelLabel = when (aiProvider) {
                                             "GEMINI" -> "Select the Gemini model to use."
                                             "DEEPSEEK" -> "Select the DeepSeek model to use."
+                                            "GROQ" -> "Select the Groq model to use."
                                             else -> "Select a model."
                                         }
                                         ThemeSelectorItem(
@@ -911,6 +927,7 @@ fun SettingsCategoryScreen(
                                                 when (aiProvider) {
                                                     "GEMINI" -> settingsViewModel.onGeminiModelChange(it)
                                                     "DEEPSEEK" -> settingsViewModel.onDeepseekModelChange(it)
+                                                    "GROQ" -> settingsViewModel.onGroqModelChange(it)
                                                 }
                                             },
                                             leadingIcon = { Icon(Icons.Rounded.Science, null, tint = MaterialTheme.colorScheme.secondary) }
@@ -941,6 +958,16 @@ fun SettingsCategoryScreen(
                                             defaultPrompt = com.theveloper.pixelplay.data.preferences.AiPreferencesRepository.DEFAULT_DEEPSEEK_SYSTEM_PROMPT,
                                             onSystemPromptSave = { settingsViewModel.onDeepseekSystemPromptChange(it) },
                                             onReset = { settingsViewModel.resetDeepseekSystemPrompt() },
+                                            title = "System Prompt",
+                                            subtitle = "Customize how the AI behaves."
+                                        )
+                                    }
+                                    "GROQ" -> {
+                                        GeminiSystemPromptItem(
+                                            systemPrompt = groqSystemPrompt,
+                                            defaultPrompt = com.theveloper.pixelplay.data.preferences.AiPreferencesRepository.DEFAULT_GROQ_SYSTEM_PROMPT,
+                                            onSystemPromptSave = { settingsViewModel.onGroqSystemPromptChange(it) },
+                                            onReset = { settingsViewModel.resetGroqSystemPrompt() },
                                             title = "System Prompt",
                                             subtitle = "Customize how the AI behaves."
                                         )

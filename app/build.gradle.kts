@@ -156,6 +156,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     // google.genai 1.11.0 — 新版统一 Gemini SDK
     implementation(libs.google.genai)
+    implementation(libs.openai.java)
     implementation(libs.androidx.navigation.runtime.ktx)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.params)

@@ -23,6 +23,7 @@ class AiClientFactory @Inject constructor() {
         return when (provider) {
             AiProvider.GEMINI -> GeminiAiClient(apiKey)
             AiProvider.DEEPSEEK -> DeepSeekAiClient(apiKey)
+            AiProvider.GROQ -> GroqAiClient(apiKey)
         }
     }
 }

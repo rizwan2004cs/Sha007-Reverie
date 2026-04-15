@@ -103,7 +103,7 @@ fun AiPlaylistSheet(
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Gemini is creating your playlist...",
+                        "AI is creating your playlist...",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
